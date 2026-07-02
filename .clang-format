@@ -1,0 +1,14 @@
+---
+Language:        Cpp
+BasedOnStyle:    Google
+IndentWidth:     4
+TabWidth:        4
+UseTab:          Never
+ColumnLimit:     100
+AccessModifierOffset: -4
+PointerAlignment: Left
+DerivePointerAlignment: false
+AllowShortFunctionsOnASingleLine: Inline
+BreakBeforeBraces: Attach
+SortIncludes:    true
+NamespaceIndentation: None

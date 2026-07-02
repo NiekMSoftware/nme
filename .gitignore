@@ -1,0 +1,30 @@
+# Visual Studio "Open Folder" CMake output
+/out/
+/build*/
+cmake-build-*/
+
+# CMake / FetchContent
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+compile_commands.json
+_deps/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.exe
+*.pdb

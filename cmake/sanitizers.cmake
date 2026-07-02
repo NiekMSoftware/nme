@@ -1,0 +1,17 @@
+# nme_enable_sanitizers(<target>)
+# Adds ASan (+ UBSan on GCC/Clang) when -DNME_ENABLE_SANITIZERS=ON; no-op otherwise.
+function(nme_enable_sanitizers target)
+	if (NOT NME_ENABLE_SANITIZERS)
+		return()
+	endif()
+
+	if (MSVC)
+		target_compile_options(${target} PRIVATE /fsanitize=address)
+		message(STATUS "ASan enabled for '${target}' (MSVC; UBSan not available)")
+	elseif()
+		set(_flags -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
+        target_compile_options(${target} PRIVATE ${_flags})
+        target_link_options(${target}    PRIVATE -fsanitize=address,undefined)
+        message(STATUS "ASan + UBSan enabled for '${target}'")
+	endif()
+endfunction()
