@@ -3,7 +3,7 @@
 
 #include "nme/platform/debug/debug_break.h"
 
-#if NME_CONFIG_DEBUG
+#if NME_DEBUG
     #define NME_PLATFORM_ASSERT(expr) \
         do {                          \
             if (expr) {               \
