@@ -16,6 +16,7 @@ target_include_directories(doctest_header SYSTEM INTERFACE ${doctest_SOURCE_DIR}
 add_executable(nme_tests
     test_main.cpp
     test_version.cpp
+    test_mpmc_queue.cpp
 )
 
 # nme::warnings intentionally omitted: doctest macros expand in the test TUs and
