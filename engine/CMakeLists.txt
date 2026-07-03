@@ -48,8 +48,8 @@ set(NME_CORE_HEADERS
     include/nme/core/result/error.h
     include/nme/core/result/result.h
 
-    include/nme/core/raii/scope_guard.h
-    include/nme/core/raii/unique_handle.h
+    include/nme/core/util/scope_guard.h
+    include/nme/core/util/unique_handle.h
 )
 
 target_sources(nme_engine

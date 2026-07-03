@@ -1,10 +1,8 @@
-#include <nme/core/raii/scope_guard.h>
 #include <nme/core/result/result.h>
-
+#include <nme/core/util/scope_guard.h>
 #include <nme/platform/platform.h>
 #include <nme/platform/timer/timer.h>
 #include <nme/platform/types.h>
-
 #include <nme/version.h>
 
 #include <cstdio>
