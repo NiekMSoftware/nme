@@ -4,6 +4,6 @@
 //==============================================================================
 namespace nme
 {
-	// Human-readable version string, e.g. "nme 0.1.0". Defined in engine/src/version.cpp.
+	// Human-readable version string.
 	const char *engine_version();
 }  // namespace nme

@@ -1,9 +1,8 @@
 # nme
 
 A learning game engine build alongside Jason Gregory's *Game
-Engine Architecture*, 4th edition, Volume I (2026). This is the usual Chapter 1-2 starting
-point: the runtime architecture (§1.5) is scaffolded - a documented header per
-subsystem - and the Chapter 2 toolchain is wired up (cross-platform CMake,
+Engine Architecture*, 4th edition, Volume I (2026). A runtime architecture is scaffolded - a documented
+header per subsystem - and the Chapter 2 toolchain is wired up (cross-platform CMake,
 warnings-as-errors, ASan/UBSan, opt-in Tracy, doctest/CTest). Set up for the
 Visual Studio "Open Folder" CMake workflow via `CMakePresets.json`.
 
@@ -19,8 +18,12 @@ that library is behaving identically across STL implementation.
 module start-up/shut-down, logging, math, memory allocation, etc.
 
 ## Prerequisites
-- **CMake >= 3.24**, a **C++20** compiiler (MSVC 2022, GCC 11+, Clang 14+), **git**
+- **CMake >= 3.24**, a **C++17** compiiler (MSVC 2022, GCC 11+, Clang 14+), **git**
 - A generator: Ninja (VS uses this for Open Folder) or the VS generator
 
 ## Disclaimer
 This repository is meant for my educational purposes only, I will not look at unnecessary pull requests.
+
+### AI Usage
+AI has been used to give me separate exercises to have a more Project-based Learning approach,
+the LLM has not deliberately given me answers or has generated code (unless stated otherwise in source).
