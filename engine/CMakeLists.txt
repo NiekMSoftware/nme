@@ -38,6 +38,8 @@ set(NME_PLATFORM_HEADERS
 set(NME_CORE_SOURCES
     src/core/assert.cpp
 
+    src/core/jobs/job_system.cpp
+
     src/core/result/error.cpp
 )
 set(NME_CORE_HEADERS
@@ -48,6 +50,7 @@ set(NME_CORE_HEADERS
     include/nme/core/debug/scoped_timer.h
 
     include/nme/core/jobs/job.h
+    include/nme/core/jobs/job_system.h
 
     include/nme/core/result/error.h
     include/nme/core/result/result.h
