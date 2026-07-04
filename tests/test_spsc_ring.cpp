@@ -15,7 +15,6 @@
 #include "nme/platform/thread/spsc_ring.h"
 #include "nme/platform/thread/thread.h"
 
-#include <cstdint>
 #include <type_traits>
 
 using nme::SPSCRing;
@@ -23,20 +22,20 @@ using nme::Thread;
 using nme::yieldCurrentThread;
 
 TEST_CASE("SPSCRing is empty on construction") {
-    SPSCRing<int, 4> ring;
+    SPSCRing<i32, 4> ring;
 
     CHECK(ring.emptyApprox());
     CHECK_FALSE(ring.fullApprox());
     CHECK(ring.sizeApprox() == 0);
     CHECK(ring.capacity() == 4);
 
-    int out = -1;
+    i32 out = -1;
     CHECK_FALSE(ring.tryPop(out));   // pop on empty fails...
     CHECK(out == -1);                // ...and leaves the target untouched
 }
 
 TEST_CASE("SPSCRing uses every slot — no sacrificed slot") {
-    SPSCRing<int, 4> ring;
+    SPSCRing<i32, 4> ring;
 
     REQUIRE(ring.tryPush(1));
     REQUIRE(ring.tryPush(2));
@@ -50,11 +49,11 @@ TEST_CASE("SPSCRing uses every slot — no sacrificed slot") {
 }
 
 TEST_CASE("SPSCRing preserves FIFO order") {
-    SPSCRing<int, 8> ring;
-    for (int i = 0; i < 5; ++i) REQUIRE(ring.tryPush(i * 10));
+    SPSCRing<i32, 8> ring;
+    for (i32 i = 0; i < 5; ++i) REQUIRE(ring.tryPush(i * 10));
 
-    int out = 0;
-    for (int i = 0; i < 5; ++i) {
+    i32 out = 0;
+    for (i32 i = 0; i < 5; ++i) {
         REQUIRE(ring.tryPop(out));
         CHECK(out == i * 10);
     }
@@ -62,8 +61,8 @@ TEST_CASE("SPSCRing preserves FIFO order") {
 }
 
 TEST_CASE("SPSCRing sizeApprox tracks single-threaded push/pop exactly") {
-    SPSCRing<int, 8> ring;
-    int out = 0;
+    SPSCRing<i32, 8> ring;
+    i32 out = 0;
     CHECK(ring.sizeApprox() == 0);
     ring.tryPush(1); CHECK(ring.sizeApprox() == 1);
     ring.tryPush(2); CHECK(ring.sizeApprox() == 2);
@@ -74,10 +73,10 @@ TEST_CASE("SPSCRing sizeApprox tracks single-threaded push/pop exactly") {
 TEST_CASE("SPSCRing: drain to empty, then pop reports empty (regression)") {
     // The exact case an earlier empty-check bug got wrong: after draining, a
     // further pop must report empty rather than hand back a stale slot.
-    SPSCRing<int, 4> ring;
+    SPSCRing<i32, 4> ring;
     REQUIRE(ring.tryPush(42));
 
-    int out = -1;
+    i32 out = -1;
     REQUIRE(ring.tryPop(out));
     CHECK(out == 42);
     CHECK(ring.emptyApprox());
@@ -90,9 +89,9 @@ TEST_CASE("SPSCRing: drain to empty, then pop reports empty (regression)") {
 TEST_CASE("SPSCRing survives many index wraps") {
     // Capacity 4 over 100k cycles => ~25k wraps of the free-running indices.
     // Exercises the mask / wrap arithmetic that a plain modulo scheme wouldn't.
-    SPSCRing<int, 4> ring;
-    int expect = 0, out = 0;
-    for (int i = 0; i < 100000; ++i) {
+    SPSCRing<i32, 4> ring;
+    i32 expect = 0, out = 0;
+    for (i32 i = 0; i < 100000; ++i) {
         REQUIRE(ring.tryPush(i));
         REQUIRE(ring.tryPop(out));
         CHECK(out == expect++);
@@ -101,19 +100,19 @@ TEST_CASE("SPSCRing survives many index wraps") {
 }
 
 TEST_CASE("SPSCRing works at the minimum capacity of 2") {
-    SPSCRing<int, 2> ring;
+    SPSCRing<i32, 2> ring;
     REQUIRE(ring.tryPush(10));
     REQUIRE(ring.tryPush(20));
     CHECK_FALSE(ring.tryPush(30));   // full at 2
 
-    int out = 0;
+    i32 out = 0;
     REQUIRE(ring.tryPop(out)); CHECK(out == 10);
     REQUIRE(ring.tryPop(out)); CHECK(out == 20);
     CHECK_FALSE(ring.tryPop(out));
 }
 
 TEST_CASE("SPSCRing carries a trivially-copyable struct payload") {
-    struct Msg { std::uint32_t id; float value; };
+    struct Msg { u32 id; f32 value; };
     static_assert(std::is_trivially_copyable_v<Msg>, "Msg must be trivially copyable");
 
     SPSCRing<Msg, 4> ring;
@@ -130,12 +129,12 @@ TEST_CASE("SPSCRing carries a trivially-copyable struct payload") {
 }
 
 TEST_CASE("SPSCRing carries pointer payloads (the Job* case)") {
-    SPSCRing<int*, 4> ring;
-    int a = 0, b = 0;
+    SPSCRing<i32*, 4> ring;
+    i32 a = 0, b = 0;
     REQUIRE(ring.tryPush(&a));
     REQUIRE(ring.tryPush(&b));
 
-    int* out = nullptr;
+    i32* out = nullptr;
     REQUIRE(ring.tryPop(out)); CHECK(out == &a);
     REQUIRE(ring.tryPop(out)); CHECK(out == &b);
 }
@@ -145,22 +144,22 @@ TEST_CASE("SPSCRing: one producer + one consumer transfer everything, in order"
     // The real contract. Compile this TU with -fsanitize=thread to also prove
     // the acquire/release edges are race-free; without TSan it still proves
     // nothing is lost, duplicated, or reordered.
-    constexpr std::uint64_t N = 1'000'000;
-    SPSCRing<std::uint64_t, 1024> ring;
+    constexpr usize N = 1'000'000;
+    SPSCRing<usize, 1024> ring;
 
     // Written only by the consumer thread; read on main after join() (which is
     // itself a happens-before edge), so no atomics are needed here.
     bool orderOk = true;
-    std::uint64_t checksum = 0;
+    usize checksum = 0;
 
     Thread producer([&] {
-        for (std::uint64_t i = 0; i < N; ++i)
+        for (usize i = 0; i < N; ++i)
             while (!ring.tryPush(i)) yieldCurrentThread();
     });
 
     Thread consumer([&] {
-        std::uint64_t next = 0;
-        std::uint64_t v = 0;
+        usize next = 0;
+        usize v = 0;
         while (next < N) {
             if (ring.tryPop(v)) {
                 if (v != next) orderOk = false;   // must arrive strictly in order
