@@ -1,5 +1,6 @@
 #include "nme/core/jobs/job_system.h"
 #include "nme/core/assert/assert.h"
+#include "nme/core/debug/profiler.h"
 
 #include <thread>  // std::thread::hardware_concurrency (a query, not a spawn)
 
@@ -81,6 +82,7 @@ bool JobSystem::getJob(u32 /*self*/, Job& out) {
 }
 
 void JobSystem::runJob(const Job& job) {
+    NME_PROFILE_ZONE_NAMED("job");
     job.closure->run();
     delete job.closure;
     if (job.counter) job.counter->decrement();
