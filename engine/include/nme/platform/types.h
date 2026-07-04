@@ -9,6 +9,8 @@
 
 #include "nme/platform/platform.h"
 
+namespace nme {
+
 #if NME_COMPILER_MSVC
 	typedef signed  __int8  i8;
 	typedef signed  __int16 i16;
@@ -32,16 +34,16 @@
 #endif
 
 #if NME_64BIT
-	typedef u64 usize;    
+	typedef u64 usize;
 	typedef i64 ptrdiff_type;
 
-	typedef i64 iptr;     
-	typedef u64 uptr;    
+	typedef i64 iptr;
+	typedef u64 uptr;
 #elif NME_32BIT
-	typedef u32 usize;   
-	typedef i32 ptrdiff_type; 
+	typedef u32 usize;
+	typedef i32 ptrdiff_type;
 
-	typedef i32 iptr;      
+	typedef i32 iptr;
 	typedef u32 uptr;
 #endif
 
@@ -71,3 +73,5 @@ static_assert(sizeof(uptr) == NME_PTR_SIZE, "NME: uptr must match pointer size")
 static_assert(sizeof(void *) == NME_PTR_SIZE, "NME: pointer size disagrees with NME_PTR_SIZE");
 
 static_assert(sizeof(b32) == 4, "NME: Bool32 must be 4 bytes");
+
+}  // namespace nme
