@@ -38,14 +38,14 @@ void engine_run() {
     const Timer& clock = nme::platform::global_timer();
 
     bool running = true;
-    u64 frame = 0;
-    constexpr u64 kMaxFrames = 3;   // TEMP: no quit signal yet (HID = Ch. 9)
+    nme::u64 frame = 0;
+    constexpr nme::u64 kMaxFrames = 3;   // TEMP: no quit signal yet (HID = Ch. 9)
 
-    u64 prev = Timer::now();        // seed so the first frame's dt is -0
+    nme::u64 prev = Timer::now();        // seed so the first frame's dt is -0
 
     while (running) {
-        const u64 curr = Timer::now();
-        const f64 dt = clock.to_seconds(curr - prev);
+        const nme::u64 curr = Timer::now();
+        const nme::f64 dt = clock.to_seconds(curr - prev);
         prev = curr;
 
         // input.poll();                  // Ch. 9  HID
