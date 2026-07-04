@@ -25,6 +25,7 @@ set(NME_PLATFORM_HEADERS
 
     # Threading
     include/nme/platform/thread/atomics.h
+    include/nme/platform/thread/condition_variable.h
     include/nme/platform/thread/mutex.h
     include/nme/platform/thread/thread.h
     include/nme/platform/thread/spsc_ring.h
@@ -71,6 +72,7 @@ target_sources(nme_engine
 if (WIN32)
     target_sources(nme_engine
         PRIVATE
+            src/platform/thread/win32/condition_variable.cpp
             src/platform/thread/win32/mutex.cpp
             src/platform/thread/win32/thread.cpp
     )
