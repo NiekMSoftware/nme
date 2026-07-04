@@ -52,23 +52,25 @@ public:
     // Enqueue one job. If counter is non-null it is incremented here and
     // decremented when the job completes.
     template<typename Fn>
-    void run(Fn&& fn, JobCounter* counter = nullptr) {
+    void run(Fn&& fn, JobCounter* counter = nullptr, const char* name = nullptr) {
         if (counter) counter->add(1);
         enqueue(Job{
             new detail::JobClosure<std::decay_t<Fn>>(std::forward<Fn>(fn)),
-            counter
+            counter,
+            name
         });
     }
 
     // Enqueue N jobs against one counter, each invoked as fn(i).
     template<typename Fn>
-    void runN(const u32 count, Fn fn, JobCounter& counter) {
+    void runN(const u32 count, Fn fn, JobCounter& counter, const char* name = nullptr) {
         counter.add(count);
         for (u32 i = 0; i < count; ++i) {
             auto task = [fn, i]() mutable { fn(i); };
             enqueue(Job{
                 new detail::JobClosure<decltype(task)>(std::move(task)),
-                &counter
+                &counter,
+                name
             });
         }
     }

@@ -50,6 +50,7 @@ struct JobClosure final : JobClosureBase {
 struct Job {
     detail::JobClosureBase* closure = nullptr;  // owned by the JobSystem
     JobCounter*             counter = nullptr;  // decremented after run(), may be null
+    const char*             name    = nullptr;
 };
 
 }  // namespace nme

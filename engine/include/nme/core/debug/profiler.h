@@ -9,12 +9,15 @@
 //==============================================================================
 #if defined(NME_ENABLE_TRACY) && NME_ENABLE_TRACY
     #include <tracy/Tracy.hpp>
-    #define NME_PROFILE_ZONE()           ZoneScoped
-    #define NME_PROFILE_ZONE_NAMED(name) ZoneScopedN(name)
-    #define NME_PROFILE_FRAME_MARK()     FrameMark
+    #define NME_PROFILE_ZONE()            ZoneScoped
+    #define NME_PROFILE_ZONE_NAMED(name)  ZoneScopedN(name)
+    #define NME_PROFILE_ZONE_TEXT(txt)    ZoneName(txt, std::strlen(txt))
+    #define NME_PROFILE_FRAME_MARK()      FrameMark
     #define NME_PROFILE_THREAD_NAME(name) tracy::SetThreadName(name)
 #else
-    #define NME_PROFILE_ZONE()           (void)0
-    #define NME_PROFILE_ZONE_NAMED(name) (void)0
-    #define NME_PROFILE_FRAME_MARK()     (void)0
+    #define NME_PROFILE_ZONE()            (void)0
+    #define NME_PROFILE_ZONE_NAMED(name)  (void)0
+    #define NME_PROFILE_ZONE_TEXT(txt)    (void)0
+    #define NME_PROFILE_FRAME_MARK()      (void)0
+    #define NME_PROFILE_THREAD_NAME(name) (void)0
 #endif

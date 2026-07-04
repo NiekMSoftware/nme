@@ -82,13 +82,23 @@ bool JobSystem::getJob(u32 /*self*/, Job& out) {
 }
 
 void JobSystem::runJob(const Job& job) {
-    NME_PROFILE_ZONE_NAMED("job");
+    NME_PROFILE_ZONE();
+    NME_PROFILE_ZONE_TEXT(job.name ? job.name : "job");
+
     job.closure->run();
     delete job.closure;
     if (job.counter) job.counter->decrement();
 }
 
 void JobSystem::workerMain(const u32 index) {
+    char name[24];
+    int n = 0;
+    for (auto p = "nme.worker."; *p; ++p) name[n++] = *p;
+    if (index >= 10) name[n++] = static_cast<char>('0' + (index / 10) % 10);
+    name[n++] = static_cast<char>('0' + index % 10);
+    name[n] = '\0';
+    NME_PROFILE_THREAD_NAME(name);
+
     for (;;) {
         Job job;
         {
