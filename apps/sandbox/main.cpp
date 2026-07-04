@@ -41,7 +41,7 @@ void engine_run() {
     u64 frame = 0;
     constexpr u64 kMaxFrames = 3;   // TEMP: no quit signal yet (HID = Ch. 9)
 
-    u64 prev = clock.now();         // seed so the first frame's dt is -0
+    u64 prev = Timer::now();        // seed so the first frame's dt is -0
 
     while (running) {
         const u64 curr = Timer::now();
