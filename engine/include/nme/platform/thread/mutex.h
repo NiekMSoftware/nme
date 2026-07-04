@@ -8,7 +8,7 @@ namespace nme
 class Mutex {
     static constexpr usize kNativeSize  = 64;
     static constexpr usize kNativeAlign = 16;
-    alignas(kNativeAlign) u8 m_storage[kNativeSize];
+    alignas(kNativeAlign) u8 m_storage[kNativeSize]{};
 
 public:
     Mutex();
@@ -22,6 +22,8 @@ public:
     void lock();
     bool tryLock();
     void unlock();
+
+    [[nodiscard]] void* native() noexcept;
 };
 
 }  // namespace nme
