@@ -1,7 +1,6 @@
-# Unit test via doctest
-# Disable with -DNME_BUILD_TESTS=OFF if offline
+# Unit tests via doctest - one executable per component.
+# Disable with -DNME_BUILD_TESTS=OFF if offline.
 include(FetchContent)
-
 FetchContent_Declare(doctest
     GIT_REPOSITORY https://github.com/doctest/doctest.git
     GIT_TAG        v2.4.11
@@ -13,19 +12,22 @@ FetchContent_MakeAvailable(doctest)
 add_library(doctest_header INTERFACE)
 target_include_directories(doctest_header SYSTEM INTERFACE ${doctest_SOURCE_DIR})
 
-add_executable(nme_tests
-    test_main.cpp
-    test_version.cpp
-    test_mpmc_queue.cpp
-    test_spsc_ring.cpp
-)
-
-set_target_properties(nme_tests PROPERTIES FOLDER "tests")
-
-# nme::warnings intentionally omitted: doctest macros expand in the test TUs and
-# would trip our aggressive -Werror set.
-target_link_libraries(nme_tests PRIVATE nme::engine doctest_header)
-nme_enable_sanitizers(nme_tests)
-
+# doctest's CTest bridge - provides doctest_discover_tests().
 include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
-doctest_discover_tests(nme_tests)
+
+# One executable per test TU. test_main.cpp is compiled *into* each exe (not a
+# shared static archive) so a TEST_CASE's self-registration is never dropped by
+# the linker. Each case is then discovered as its own CTest entry, namespaced
+# by binary name.
+function(nme_add_test name)
+    add_executable(${name} test_main.cpp ${ARGN})
+    target_link_libraries(${name} PRIVATE nme::engine doctest_header)
+    set_target_properties(${name} PROPERTIES FOLDER "tests")
+    nme_enable_sanitizers(${name})
+    # nme::warnings intentionally omitted: doctest macros trip our -Werror set.
+    doctest_discover_tests(${name} TEST_PREFIX "${name}:")
+endfunction()
+
+nme_add_test(test_version    test_version.cpp)
+nme_add_test(test_mpmc_queue test_mpmc_queue.cpp)
+nme_add_test(test_spsc_ring  test_spsc_ring.cpp)
