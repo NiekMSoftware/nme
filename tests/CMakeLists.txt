@@ -19,6 +19,8 @@ add_executable(nme_tests
     test_mpmc_queue.cpp
 )
 
+set_target_properties(nme_tests PROPERTIES FOLDER "tests")
+
 # nme::warnings intentionally omitted: doctest macros expand in the test TUs and
 # would trip our aggressive -Werror set.
 target_link_libraries(nme_tests PRIVATE nme::engine doctest_header)

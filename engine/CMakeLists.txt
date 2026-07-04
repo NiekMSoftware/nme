@@ -97,6 +97,7 @@ target_compile_definitions(nme_engine PRIVATE
     NME_VERSION_PATCH=${PROJECT_VERSION_PATCH})
 
 target_link_libraries(nme_engine PRIVATE nme::warnings)
+set_target_properties(nme_engine PROPERTIES FOLDER "nme")
 
 # Optional Tracy (Ch.2 stretch / Ch.10). OFF by default -> no network needed.
 if(NME_ENABLE_TRACY)

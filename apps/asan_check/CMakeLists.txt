@@ -4,3 +4,4 @@
 add_executable(asan_check main.cpp)
 target_link_libraries(asan_check PRIVATE nme::warnings)
 nme_enable_sanitizers(asan_check)
+set_target_properties(asan_check PROPERTIES FOLDER "check")
