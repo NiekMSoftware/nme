@@ -47,6 +47,8 @@ set(NME_CORE_HEADERS
     include/nme/core/debug/profiler.h
     include/nme/core/debug/scoped_timer.h
 
+    include/nme/core/jobs/job.h
+
     include/nme/core/result/error.h
     include/nme/core/result/result.h
 
