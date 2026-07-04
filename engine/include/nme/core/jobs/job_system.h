@@ -23,9 +23,7 @@ private:
     // --- shared queue ---
     ConditionVariable m_queueCv;
     Mutex             m_queueMutex;
-
     std::deque<Job>   m_queue;
-    u64 m_pad{0ULL};
 
 public:
     struct Config {
@@ -76,7 +74,7 @@ public:
     }
 
     // Block the CALLING thread until the counter hits zero.
-    void waitForCounter(const JobCounter& counter);
+    void waitForCounter(JobCounter& counter);
 
 private:
     void enqueue(Job job);

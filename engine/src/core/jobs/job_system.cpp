@@ -29,8 +29,8 @@ void JobSystem::startup(const Config& cfg) {
         int n = 0;
         for (const char* p = cfg.namePrefix; *p && n < 27; ++p) name[n++] = *p;
         name[n++] = '.';
-        if (i >= 10) name[n++] = static_cast<char>('0' + (1 / 10) % 10);
-        name[n++] = static_cast<char>('0' + 1 % 10);
+        if (i >= 10) name[n++] = static_cast<char>('0' + (i / 10) % 10);
+        name[n++] = static_cast<char>('0' + i % 10);
         name[n]   = '\0';
 
         ThreadConfig tc{};
@@ -109,7 +109,7 @@ void JobSystem::workerMain(const u32 index) {
     (void)index;    // index unused for now...
 }
 
-void JobSystem::waitForCounter(const JobCounter& counter) {
+void JobSystem::waitForCounter(JobCounter& counter) {
     while (!counter.done()) {
         Job job;
         if (getJob(0, job)) {
