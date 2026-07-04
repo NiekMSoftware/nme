@@ -17,6 +17,7 @@ add_executable(nme_tests
     test_main.cpp
     test_version.cpp
     test_mpmc_queue.cpp
+    test_spsc_ring.cpp
 )
 
 set_target_properties(nme_tests PROPERTIES FOLDER "tests")

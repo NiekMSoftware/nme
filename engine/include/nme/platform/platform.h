@@ -150,6 +150,14 @@
 	#define NME_32BIT    1
 #endif
 
+#ifndef NME_CACHE_LINE_SIZE
+    #if defined(__APPLE__) && defined(__aarch64__)
+        #define NME_CACHE_LINE_SIZE 128
+    #else
+        #define NME_CACHE_LINE_SIZE 64
+    #endif
+#endif
+
 // ============================================================================
 // Endianness
 // ============================================================================

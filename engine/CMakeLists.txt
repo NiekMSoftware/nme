@@ -27,6 +27,7 @@ set(NME_PLATFORM_HEADERS
     include/nme/platform/thread/atomics.h
     include/nme/platform/thread/mutex.h
     include/nme/platform/thread/thread.h
+    include/nme/platform/thread/spsc_ring.h
 
     # Timer
     include/nme/platform/timer/timer.h
