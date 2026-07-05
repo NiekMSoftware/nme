@@ -9,6 +9,10 @@
 
 namespace nme {
 
+#ifdef NME_COMPILER_MSVC
+    #pragma warning(push)
+    #pragma warning(disable : 4324) // structure padded due to alignas, intentional
+#endif
 /**
  * @brief Chase-lev work-stealing deque.
  *
@@ -115,6 +119,9 @@ public:
     [[nodiscard]] usize emptyApprox() const noexcept { return sizeApprox() == 0; }
     [[nodiscard]] static constexpr usize capacity() noexcept { return Capacity; }
 };
+#ifdef NME_COMPILER_MSVC
+    #pragma warning(pop)
+#endif
 
 }  // namespace nme
 
