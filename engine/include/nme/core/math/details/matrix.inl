@@ -233,6 +233,64 @@ template<typename T>
     return d;
 }
 
+template<typename T>
+[[nodiscard]] constexpr std::enable_if_t<detail::is_floating<T>, Matrix<T, 2, 2>>
+inverse(const Matrix<T, 2, 2>& m) {
+    T inv_det = T{1} / determinant(m);
+    Matrix<T, 2, 2> r{};
+    r(0,0) =  m(1,1) * inv_det; r(0,1) = -m(0,1) * inv_det;
+    r(1,0) = -m(1,0) * inv_det; r(1,1) =  m(0,0) * inv_det;
+    return r;
+}
+
+template<typename T>
+[[nodiscard]] constexpr std::enable_if_t<detail::is_floating<T>, Matrix<T, 3, 3>>
+inverse(const Matrix<T, 3, 3>& m) {
+    Matrix<T, 3, 3> adj{};
+    for (u32 c = 0; c < 3; ++c) for (u32 r = 0; r < 3; ++r) {
+        u32 ri[2], ci[2], p = 0, q = 0;
+        for (u32 k = 0; k < 3; ++k) if (k != r) ri[p++] = k;
+        for (u32 k = 0; k < 3; ++k) if (k != c) ci[q++] = k;
+         T minor = detail::det2(m(ri[0],ci[0]), m(ri[0],ci[1]),
+                                   m(ri[1],ci[0]), m(ri[1],ci[1]));
+            adj(c,r) = ((r + c) & 1u) ? -minor : minor;   // transposed cofactor
+    }
+    T inv_det = T{1} / (m(0,0)*adj(0,0) + m(0,1)*adj(1,0) + m(0,2)*adj(2,0));
+    for (u32 i = 0; i < 9; ++i) adj.data[i] *= inv_det;
+    return adj;
+}
+
+template<typename T>
+[[nodiscard]] constexpr std::enable_if_t<detail::is_floating<T>, Matrix<T, 4, 4>>
+inverse(const Matrix<T, 4, 4>& m) {
+    Matrix<T, 4, 4> adj{};
+    for (u32 c = 0; c < 4; ++c) for (u32 r = 0; r < 4; ++r) {
+        u32 ri[3], ci[3], p = 0, q = 0;
+        for (u32 k = 0; k < 4; ++k) if (k != r) ri[p++] = k;
+        for (u32 k = 0; k < 4; ++k) if (k != c) ci[q++] = k;
+        T minor = detail::det2(m(ri[0],ci[0]), m(ri[0],ci[1]), m(ri[0],ci[2]),
+                                m(ri[1], ci[0]), m(ri[1],ci[1]), m(ri[1],ci[2]),
+                                m(ri[2], ci[0]), m(ri[2], ci[1]), m(ri[2], ci[2]));
+        adj(c,r) = ((r + c) & 1u) ? -minor : minor;     // transposed cofactor
+    }
+    T inv_det = T{1} / (m(0,0)*adj(0,0) + m(0,1)*adj(1,0) + m(0,2)*adj(2,0) + m(0,3)*adj(3,0));
+    for (u32 i = 0; i < 16; ++i) adj.data[i] *= inv_det;
+    return adj;
+}
+
+// Fast inverse for an affine 4x4 (last row 0,0,0,1): invert the linear 3x3,
+// then re-derive the translation. Handles rotation, scale and shear.
+template<typename T>
+[[nodiscard]] std::enable_if_t<detail::is_floating<T>, Matrix<T, 4, 4>>
+inverse_affine(const Matrix<T, 4, 4>& m) {
+    Matrix<T, 3, 3> a = inverse(to_mat3(m));
+    Vector<T, 3> t{ m(0,3), m(1,3), m(2,3) };
+    Vector<T, 3> nt = -(a * t);
+    Matrix<T, 4, 4> r = to_mat4(a);
+    r(0,3) = nt.x; r(1,3) = nt.y; r(2,3) = nt.z;
+    return r;
+}
+
 // ---------------------------------------------
 //                  Transforms
 // ---------------------------------------------
