@@ -206,6 +206,34 @@ template<typename T>
 }
 
 // ---------------------------------------------
+//          Determinant & inverse
+// ---------------------------------------------
+
+template<typename T>
+[[nodiscard]] constexpr T determinant(const Matrix<T, 2, 2>& m) {
+    return detail::det2(m(0,0), m(0,1), m(1,0), m(1,1));
+}
+template<typename T>
+[[nodiscard]] constexpr T determinant(const Matrix<T, 3, 3>& m) {
+    return detail::det3(m(0,0), m(0,1), m(0,2),
+                        m(1,0), m(1,1), m(1,2),
+                        m(2,0), m(2,1), m(2,2));
+}
+template<typename T>
+[[nodiscard]] constexpr T determinant(const Matrix<T, 4, 4>& m) {
+    T d{};
+    for (u32 c = 0; c < 4; ++c) {
+        u32 ci[3], q = 0;
+        for (u32 k = 0; k < 4; ++k) if (k != c) ci[q++] = k;
+        T minor = detail::det3(m(1,ci[0]), m(1,ci[1]), m(1,ci[2]),
+                               m(2,ci[0]), m(2,ci[1]), m(2,ci[2]),
+                               m(3,ci[0]), m(3,ci[1]), m(3,ci[2]));
+        d += ((c & 1u) ? -m(0,c) : m(0,c)) * minor;
+    }
+    return d;
+}
+
+// ---------------------------------------------
 //                  Transforms
 // ---------------------------------------------
 
