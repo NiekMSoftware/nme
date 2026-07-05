@@ -152,6 +152,59 @@ template<typename T, u32 N>
     return out;
 }
 
+template<typename T, u32 N>
+[[nodiscard]] constexpr T trace(const Matrix<T, N, N>& m) {
+    T s{};
+    for (u32 i = 0; i < N; ++i) s += m.data[i*N + i];
+    return s;
+}
+
+template<typename T, u32 N>
+[[nodiscard]] constexpr Vector<T, N> diagonal(const Matrix<T, N, N>& m) {
+    Vector<T, N> v{};
+    for (u32 i = 0; i < N; ++i) v.data[i] = m.data[i*N + i];
+    return v;
+}
+
+template<typename T, u32 R, u32 C>
+[[nodiscard]] constexpr Vector<T, R> column(const Matrix<T, R, C>& m, const u32 c) {
+    Vector<T, R> v{};
+    for (u32 r = 0; r < R; ++r) v.data[r] = m.data[c*R + r];
+    return v;
+}
+template<typename T, u32 R, u32 C>
+[[nodiscard]] constexpr Vector<T, R> row(const Matrix<T, R, C>& m, const u32 r) {
+    Vector<T, R> v{};
+    for (u32 c = 0; c < C; ++c) v.data[c] = m.data[c*R + r];
+    return v;
+}
+template<typename T, u32 R, u32 C>
+constexpr void set_column(Matrix<T, R, C>& m, const u32 c, const Vector<T, R>& v) {
+    for (u32 r = 0; r < R; ++r) m.data[c*R + r] = v.data[r];
+}
+template<typename T, u32 R, u32 C>
+constexpr void set_row(Matrix<T, R, C>& m, const u32 r, const Vector<T, R>& v) {
+    for (u32 c = 0; c < C; ++c) m.data[c*R + r] = v.data[c];
+}
+
+// embed a 3x3 into the upper-left of a 4x4 (translation zero)
+template<typename T>
+[[nodiscard]] constexpr Matrix<T, 4, 4> to_mat4(const Matrix<T, 3, 3>& m) {
+    Matrix<T, 4, 4> r(T{1});
+    for (u32 c = 0; c < 3; ++c)
+        for (u32 rr = 0; rr < 3; ++rr) r.data[c*4 + rr] = m.data[c*3 + rr];
+    return r;
+}
+
+// embed a 4x4 into the upper left of a 3x3
+template<typename T>
+[[nodiscard]] constexpr Matrix<T, 3, 3> to_mat3(const Matrix<T, 4, 4>& m) {
+    Matrix<T, 3, 3> r(T{1});
+    for (u32 c = 0; c < 3; ++c)
+        for (u32 rr = 0; rr < 3; ++rr) r.data[c*3 + rr] = m.data[c*4 + rr];
+    return r;
+}
+
 // ---------------------------------------------
 //                  Transforms
 // ---------------------------------------------
