@@ -1,10 +1,11 @@
 #ifndef NME_JOB_SYSTEM_H_
 #define NME_JOB_SYSTEM_H_
 
-#include <deque>        // will be replaced with per-worker Chase-Lev deque
-#include <utility>      // std::forward, std::decay_t
+#include <deque>    // will be replaced with per-worker Chase-Lev deque
+#include <utility>  // std::forward, std::decay_t
 
 #include "nme/core/jobs/job.h"
+#include "nme/core/jobs/ws_deque.h"
 #include "nme/platform/thread/atomics.h"
 #include "nme/platform/thread/condition_variable.h"
 #include "nme/platform/thread/mutex.h"
@@ -15,15 +16,22 @@ namespace nme {
 
 class JobSystem {
 private:
+    static constexpr usize kDequeCapacity = 8192;
+    using Deque = WSDeque<Job, kDequeCapacity>;
+
     // --- lifecycle ---
     Thread*      m_workers = nullptr;  // array of m_workerCount, owned
     Atomic<b32>  m_running{false};  // false => workers exit their loop
     u32          m_workerCount = 0;
 
-    // --- shared queue ---
-    ConditionVariable m_queueCv;
-    Mutex             m_queueMutex;
-    std::deque<Job>   m_queue;
+    // --- per owner deque ---
+    Deque* m_dequeues   = nullptr;
+    u32    m_dequeCount = 0;
+
+    // --- idle-worker parking ---
+    ConditionVariable m_idleCv;
+    Mutex             m_idleMutex;
+    Atomic<u32>       m_sleepers{0};
 
 public:
     struct Config {
@@ -76,11 +84,15 @@ public:
     }
 
     // Block the CALLING thread until the counter hits zero.
-    void waitForCounter(JobCounter& counter);
+    void waitForCounter(const JobCounter& counter) const;
 
 private:
-    void enqueue(Job job);
-    bool getJob(u32 self, Job& out);    // false if no work available right now
+    void enqueue(const Job& job);              // push to the CALLING thread's own deque
+    bool getJob(u32 self, Job& out) const;    // false if no work available right now
+    bool trySteal(u32 self, Job& out) const;  // one random-victim steal sweep
+
+    void wakeOne();                     // wake a parked worker if any
+    void wakeAll();                     // shutdown
 
     static void runJob(const Job& job); // run() + delete closure + decrement counter
     void workerMain(u32 index);         // the per-worker loop
