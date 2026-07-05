@@ -12,55 +12,28 @@ namespace nme::math {
 
 // Matrix * Matrix (inner dimension N cancels): (R x N) * (N x C) -> (R x C)
 template<typename T, u32 R, u32 N, u32 C>
-Matrix<T, R, C> operator*(const Matrix<T, R, C>& a, const Matrix<T, N, C>& b) {
-    Matrix<T, R, C> out;
-    for (u32 c = 0; c < C; ++c) {
-        for (u32 r = 0; r < R; ++r) {
-            T sum = T(0);
-            for (u32 k = 0; k < N; ++k)
-                sum += a.data[k * R + r] * b.data[k * N + k];
-            out.data[c * R + r] = sum;
-        }
-    }
+constexpr Matrix<T, R, C> operator*(const Matrix<T, R, N>& a, const Matrix<T, N, C>& b) {
+    Matrix<T, R, C> out{};
+    for (u32 c = 0; c < C; ++c)
+        for (u32 k = 0; k < N; ++k)
+            for (u32 r = 0; r < R; ++r)
+                out.data[c*R + r] += a.data[k*R + r] * b.data[c*N + k];
     return out;
 }
 
 // Matrix * column-vector: (R x C) * (C) -> (R)
 template<typename T, u32 R, u32 C>
-Vector<T, R> operator*(const Matrix<T, R, C>& m, const Vector<T, R>& v) {
-    Vector<T, R> out;
-    for (u32 r = 0; r < R; ++r) {
-        T sum = T(0);
-        for (u32 k = 0; k < C; ++k)
-            sum += m.data[k * R + r] * v.data[k];
-        out.data[r] = sum;
-    }
+constexpr Vector<T, R> operator*(const Matrix<T, R, C>& m, const Vector<T, C>& v) {
+    Vector<T, R> out{};
+    for (u32 c = 0; c < C; ++c)
+        for (u32 r = 0; r < R; ++r)
+            out.data[r] += m.data[c*R + r] * v.data[c];
     return out;
 }
 
 // ---------------------------------------------
-//                  Utilities
+//                  Comparison
 // ---------------------------------------------
-
-// (R x C) -> (C x R)
-template<typename T, u32 R, u32 C>
-Matrix<T, C, R> transpose(const Matrix<T, R, C>& m) {
-    Matrix<T, C, R> out;
-    for (u32 i = 0; i < R; ++i)
-        for (u32 j = 0; j < C; ++j)
-            out.data[i * C + j] = m.data[j * R + i];
-    return out;
-}
-
-// identity<f32, 4>() -- or just Matrix(1.0f) via the diagonal constructor.
-template<typename T, u32 N>
-Matrix<T, N, N> identity() {
-    Matrix<T, N, N> out;
-    for (u32 c = 0; c < N; ++c)
-        for (u32 r = 0; r < N; ++r)
-            out.data[c * N + r] = (r == c) ? T(1) : T(0);
-    return out;
-}
 
 template<typename T, u32 R, u32 C>
 bool operator==(const Matrix<T, R, C>& a, const Matrix<T, R, C>& b) {
@@ -71,9 +44,62 @@ bool operator==(const Matrix<T, R, C>& a, const Matrix<T, R, C>& b) {
 template<typename T, u32 R, u32 C>
 bool operator!=(const Matrix<T, R, C>& a, const Matrix<T, R, C>& b) { return !(a == b); }
 
-// TODO: determinant, inverse, TRS factories (translate/scale/rotate),
-// look_at, and perspective/ortho. The projections need the per-API depth range
-// (D3D12 & Vulkan z in [0,1], OpenGL[-1,1]) and Vulkan's Y-flip, so they get built
-// per-API rather than as one factory (maybe, unsure yet on that design).
+// ---------------------------------------------
+//                  Utilities
+// ---------------------------------------------
+
+// (R x C) -> (C x R)
+template<typename T, u32 R, u32 C>
+[[nodiscard]] constexpr Matrix<T, C, R> transpose(const Matrix<T, R, C>& m) {
+    Matrix<T, C, R> out{};
+    for (u32 i = 0; i < R; ++i)
+        for (u32 j = 0; j < C; ++j)
+            out.data[i*C + j] = m.data[j*R + i];
+    return out;
+}
+
+// identity<f32, 4>(), or Matrix(T{1}) via the diagonal constructor.
+template<typename T, u32 N>
+[[nodiscard]] constexpr Matrix<T, N, N> identity() {
+    Matrix<T, N, N> out{};
+    for (u32 i = 0; i < N; ++i) out.data[i*N + i] = T{1};
+    return out;
+}
+
+// ---------------------------------------------
+//                  Transforms
+// ---------------------------------------------
+
+template<typename T>
+[[nodiscard]] constexpr Matrix<T, 4, 4> translation(const Vector<T, 3>& t) {
+    Matrix<T, 4, 4> m(T{1});
+    m(0,3) = t.x; m(1,3) = t.y; m(2,3) = t.z;
+    return m;
+}
+
+template<typename T>
+[[nodiscard]] constexpr Matrix<T, 4, 4> scale(const Vector<T, 3>& s) {
+    Matrix<T, 4, 4> m(T{1});
+    m(0,0) = s.x; m(1,1) = s.y; m(2,2) = s.z;
+    return m;
+}
+
+// axis assumed unit length
+template<typename T>
+[[nodiscard]] constexpr std::enable_if_t<detail::is_floating<T>, Matrix<T, 4, 4>>
+rotation(const Vector<T, 3>& axis, detail::type_identity_t<T> angle) {
+    const T c = std::cos(angle), s = std::sin(angle), t = T{1} - c;
+    const T x = axis.x, y = axis.y, z = axis.z;
+    Matrix<T, 4, 4> m(T{1});
+    m(0,0)  = t*x*x + c;   m(0, 1) = t*x*y - s*z; m(0, 2) = t*x*z + s*y;
+    m(1,0)  = t*x*y + s*z; m(1, 1) = t*y*y + c;   m(1, 2) = t*y*z - s*x;
+    m(2, 0) = t*x*z - s*y; m(2, 1) = t*y*z + s*x; m(2, 2) = t*z*z + c;
+    return m;
+}
 
 }  // namespace nme::math
+
+// TODO: determinant, inverse, look_at, and perspective/ortho.
+// The projections need the per-API depth range
+// (D3D12 & Vulkan z in [0,1], OpenGL[-1,1]) and Vulkan's Y-flip, so they get built
+// per-API rather than as one factory (maybe, unsure yet on that design).
