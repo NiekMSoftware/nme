@@ -328,7 +328,7 @@ rotation(const Vector<T, 3>& axis, detail::type_identity_t<T> angle) {
 
 }  // namespace nme::math
 
-// TODO: determinant, inverse, look_at, and perspective/ortho.
+// TODO: look_at, and perspective/ortho.
 // The projections need the per-API depth range
 // (D3D12 & Vulkan z in [0,1], OpenGL[-1,1]) and Vulkan's Y-flip, so they get built
 // per-API rather than as one factory (maybe, unsure yet on that design).
