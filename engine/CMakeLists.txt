@@ -53,6 +53,8 @@ set(NME_CORE_HEADERS
     include/nme/core/jobs/job_system.h
     include/nme/core/jobs/ws_deque.h
 
+    include/nme/core/math/vec.h
+
     include/nme/core/result/error.h
     include/nme/core/result/result.h
 

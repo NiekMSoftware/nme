@@ -9,6 +9,21 @@ FetchContent_Declare(doctest
 )
 FetchContent_MakeAvailable(doctest)
 
+option(NME_TEST_AGAINST_GLM "Validate nme::math against GLM (fetches GLM)" ON)
+
+if(NME_TEST_AGAINST_GLM)
+    FetchContent_Declare(glm
+            GIT_REPOSITORY https://github.com/g-truc/glm.git
+            GIT_TAG        1.0.1
+            GIT_SHALLOW    TRUE
+            SOURCE_SUBDIR  __skip_glm_build__
+    )
+    FetchContent_MakeAvailable(glm)
+
+    add_library(glm_header INTERFACE)
+    target_include_directories(glm_header SYSTEM INTERFACE ${glm_SOURCE_DIR})
+endif()
+
 add_library(doctest_header INTERFACE)
 target_include_directories(doctest_header SYSTEM INTERFACE ${doctest_SOURCE_DIR})
 
@@ -32,3 +47,9 @@ nme_add_test(test_version    test_version.cpp)
 nme_add_test(test_mpmc_queue test_mpmc_queue.cpp)
 nme_add_test(test_spsc_ring  test_spsc_ring.cpp)
 nme_add_test(test_deque      test_deque.cpp)
+
+nme_add_test(test_vec test_vec.cpp)
+if(NME_TEST_AGAINST_GLM)
+    target_link_libraries(test_vec PRIVATE glm_header)
+    target_compile_definitions(test_vec PRIVATE NME_TEST_WITH_GLM)
+endif()
