@@ -308,6 +308,10 @@ template<typename T>
     m(0,0) = s.x; m(1,1) = s.y; m(2,2) = s.z;
     return m;
 }
+template<typename T>
+[[nodiscard]] constexpr Matrix<T, 4, 4> scale(T s) {
+    return scale(Vector<T, 3>(s, s, s));
+}
 
 // axis assumed unit length
 template<typename T>
