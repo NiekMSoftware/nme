@@ -1,5 +1,7 @@
 // vec.inl - operator and free-function definitions for nme::math vectors.
 
+#pragma once
+
 namespace nme::math {
 
 // ===========================================================================
