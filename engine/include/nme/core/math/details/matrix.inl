@@ -6,6 +6,19 @@
 
 namespace nme::math {
 
+// Clip-space conventions for the projection builders
+// ClipDepth::ZeroToOne   -> D3D12 / VK
+// ClipDepth::NegOneToOne -> OpenGL
+enum class ClipDepth  { ZeroToOne, NegOneToOne };
+enum class Handedness { RightHanded, LeftHanded };
+
+namespace detail {
+template<typename T> constexpr T det2(T a, T b, T c, T d) { return a*d - b*c; }
+template<typename T> constexpr T det3(T a, T b, T c, T d, T e, T f, T g, T h, T i) {
+    return a*(e*i - f*h) - b*(d*i - f*g) + c*(d*h - e*g);
+}
+}  // namespace  detail
+
 // ---------------------------------------------
 //                   Products
 // ---------------------------------------------
@@ -31,6 +44,69 @@ constexpr Vector<T, R> operator*(const Matrix<T, R, C>& m, const Vector<T, C>& v
     return out;
 }
 
+template<typename T, u32 N>
+constexpr Matrix<T, N, N>& operator*=(Matrix<T, N, N>& a, const Matrix<T, N, N>& b) {
+    a = a * b;
+    return a;
+}
+
+// ---------------------------------------------
+//             Arithmetic operators
+// ---------------------------------------------
+
+template<typename T, u32 R, u32 C>
+constexpr Matrix<T, R, C> operator-(Matrix<T, R, C> m) {
+    for (u32 i = 0; i < R * C; ++i) m.data[i] = -m.data[i];
+    return m;
+}
+
+template<typename T, u32 R, u32 C>
+constexpr Matrix<T, R, C> operator+(Matrix<T, R, C> a, const Matrix<T, R, C>& b) {
+    for (u32 i = 0; i < R * C; ++i) a.data[i] += b.data[i];
+    return a;
+}
+template<typename T, u32 R, u32 C>
+constexpr Matrix<T, R, C> operator-(Matrix<T, R, C> a, const Matrix<T, R, C>& b) {
+    for (u32 i = 0; i < R * C; ++i) a.data[i] -= b.data[i];
+    return a;
+}
+
+template<typename T, u32 R, u32 C>
+constexpr Matrix<T, R, C> operator*(Matrix<T, R, C> m, detail::type_identity_t<T> s) {
+    for (u32 i = 0; i < R * C; ++i) m.data[i] *= s;
+    return m;
+}
+template<typename T, u32 R, u32 C>
+constexpr Matrix<T, R, C> operator*(detail::type_identity_t<T> s, Matrix<T, R, C> m) {
+    return m * s;
+}
+template<typename T, u32 R, u32 C>
+constexpr Matrix<T, R, C> operator/(Matrix<T, R, C> m, detail::type_identity_t<T> s) {
+    for (u32 i = 0; i < R * C; ++i) m.data[i] /= s;
+    return m;
+}
+
+template<typename T, u32 R, u32 C>
+constexpr Matrix<T, R, C>& operator+=(Matrix<T, R, C>& a, const Matrix<T, R, C>& b) {
+    for (u32 i = 0; i < R * C; ++i) a.data[i] += b.data[i];
+    return a;
+}
+template<typename T, u32 R, u32 C>
+constexpr Matrix<T, R, C>& operator-=(Matrix<T, R, C>& a, const Matrix<T, R, C>& b) {
+    for (u32 i = 0; i < R * C; ++i) a.data[i] -= b.data[i];
+    return a;
+}
+template<typename T, u32 R, u32 C>
+constexpr Matrix<T, R, C>& operator*=(Matrix<T, R, C>& m, detail::type_identity_t<T> s) {
+    for (u32 i = 0; i < R * C; ++i) m.data[i] *= s;
+    return m;
+}
+template<typename T, u32 R, u32 C>
+constexpr Matrix<T, R, C>& operator/=(Matrix<T, R, C>& m, detail::type_identity_t<T> s) {
+    for (u32 i = 0; i < R * C; ++i) m.data[i] /= s;
+    return m;
+}
+
 // ---------------------------------------------
 //                  Comparison
 // ---------------------------------------------
@@ -43,6 +119,16 @@ bool operator==(const Matrix<T, R, C>& a, const Matrix<T, R, C>& b) {
 }
 template<typename T, u32 R, u32 C>
 bool operator!=(const Matrix<T, R, C>& a, const Matrix<T, R, C>& b) { return !(a == b); }
+
+template<typename T, u32 R, u32 C>
+[[nodiscard]] constexpr std::enable_if_t<detail::is_floating<T>, bool>
+is_near(const Matrix<T, R, C>& a, const Matrix<T, R, C>& b, detail::type_identity_t<T> eps = T(1e-5)) {
+    for (u32 i = 0; i < R * C; ++i) {
+        T d = a.data[i] - b.data[i];
+        if ((d < T{0} ? -d : d) > eps) return false;
+    }
+    return true;
+}
 
 // ---------------------------------------------
 //                  Utilities
