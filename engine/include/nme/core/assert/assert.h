@@ -12,7 +12,7 @@ void nme_assert_handleFailure(const char* expr, const char* file,
 
 #define NME_IMPL_CHECK(expr)                                                        \
 do {                                                                                \
-    if (NME_UNLIKELY(!expr)) {                                                      \
+    if (NME_UNLIKELY(!(expr))) {                                                      \
         nme::detail::nme_assert_handleFailure(#expr, __FILE__, __func__, __LINE__); \
         NME_DEBUG_BREAK();                                                           \
     }                                                                               \
