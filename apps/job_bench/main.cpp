@@ -8,20 +8,12 @@
 //
 //   Frame simulation: pretend to be an engine. Distinct job TYPES with
 //     different costs and counts, run as dependency PHASES separated by
-//     barriers (anim -> physics -> culling -> render prep). This is the
-//     bulk-synchronous model 4c supports: each phase runN's, then
-//     waitForCounter's before the next begins. In Tracy you SEE the barriers
-//     (all workers converge, a gap, the next phase fans out) and the distinct
-//     zone names per phase. The render "main pass" job is deliberately fat so
-//     you get a realistic straggler that stalls the barrier.
-//     job_bench --frame [--frames F] [--scale S]
+//     barriers (anim -> physics -> culling -> render prep).
 //
-//   --verify   run the correctness asserts instead.
+// Benchmark source file has been generated using a LLM.
 //==============================================================================
 #include <cassert>
 #include <cstdio>
-#include <cstring>   // std::strcmp
-#include <cstdlib>   // std::strtoul
 
 #include "nme/core/jobs/job_system.h"
 #include "nme/core/debug/profiler.h"
@@ -53,7 +45,7 @@ struct Args {
     nme::u32 frames      = 200;
     nme::u32 scale       = 1;       // frame-sim: multiplies entity counts
     bool     verify      = false;
-    bool     frame       = false;   // run the engine-frame simulation
+    bool     frame       = true;   // run the engine-frame simulation
 };
 
 Args parse(const int argc, char** argv) {
