@@ -125,6 +125,6 @@ static_assert(std::is_standard_layout_v<Vector4f>);
 
 }  // namespace nme::math
 
-#include "vec.inl"
+#include "details/vec.inl"
 
 // EOF
