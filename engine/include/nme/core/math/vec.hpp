@@ -102,5 +102,6 @@ using usize4   = Vector<usize, 4>;
 #include "details/vec_ctor.inl"
 #include "details/vec_ops.inl"
 #include "details/vec_geometric.inl"
+#include "details/vec_common.inl"
 
 // EOF
