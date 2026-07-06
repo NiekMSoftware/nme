@@ -115,4 +115,21 @@ constexpr Vector<T, N> operator/=(Vector<T, N>& v, U s) noexcept {
     return v;
 }
 
+// ------------------------------ comparison ---------------------------------
+
+template<typename T, usize N>
+constexpr bool operator==(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+    for (usize i = 0; i < N; ++i) if (!(a[i] == b[i])) return false;
+    return true;
+}
+
+// <=> gives lexicographic ordering, mostly for container/sort use,
+// not geometric meaning.
+template<typename T, usize N>
+constexpr auto operator<=>(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+    for (usize i = 0; i < N; ++i)
+        if (auto c = a[i] <=> b[i]; c != 0) return c;
+    return a[0] <=> b[0];   // equal: return the equal-category of value T
+}
+
 }  // namespace nme::math
