@@ -2,8 +2,8 @@
 
 #include <type_traits>
 
-#include "nme/platform/types.h"
 #include "concepts.hpp"
+#include "nme/platform/types.h"
 
 namespace nme::math {
 
