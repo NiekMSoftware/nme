@@ -37,8 +37,8 @@ const Vector<T, 3> VectorConstants<T, 3>::up      {  T(0),  T(1),  T(0) };
 template<typename T> requires is_floating<T>
 const Vector<T, 3> VectorConstants<T, 3>::down    {  T(0), T(-1),  T(0) };
 template<typename T> requires is_floating<T>
-const Vector<T, 3> VectorConstants<T, 3>::forward {  T(0),  T(0), T(-1) };
+const Vector<T, 3> VectorConstants<T, 3>::forward {  T(0),  T(0),  T(1) };
 template<typename T> requires is_floating<T>
-const Vector<T, 3> VectorConstants<T, 3>::back    {  T(0),  T(0),  T(1) };
+const Vector<T, 3> VectorConstants<T, 3>::back    {  T(0),  T(0), T(-1) };
 
 }  // nme::math
