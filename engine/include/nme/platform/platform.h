@@ -173,6 +173,103 @@
 #endif
 
 // ============================================================================
+// SIMD / Vector Instruction Set Detection
+// ============================================================================
+
+// ---- x86 / x64: evaluated top-down so each level pulls in the ones below ----
+#if defined(NME_DISABLE_INTRINSTICS)
+    #define NME_SIMD_ENABLED 0
+#else
+    #define NME_SIMD_ENABLED 1
+#endif
+
+#if NME_SIMD_ENABLED && defined(__AVX2__)
+    #define NME_SIMD_ACX2 1
+#else
+    #define NME_SIMD_ACX2 0
+#endif
+
+#if NME_SIMD_ACX2 || (NME_SIMD_ENABLED && defined(__AVX__))
+    #define NME_SIMD_AVX 1
+#else
+    #define NME_SIMD_AVX 0
+#endif
+
+#if NME_SIMD_AVX || (NME_SIMD_ENABLED && defined(__SSE4_2__))
+    #define NME_SIMD_SSE42 1
+#else
+    #define NME_SIMD_SSE42 0
+#endif
+
+#if NME_SIMD_SSE42 || (NME_SIMD_ENABLED && defined(__SSE4_1__))
+    #define NME_SIMD_SSE41 1
+#else
+    #define NME_SIMD_SSE41 0
+#endif
+
+#if NME_SIMD_SSE41 || (NME_SIMD_ENABLED && defined(__SSSE3__))
+    #define NME_SIMD_SSSE3 1
+#else
+    #define NME_SIMD_SSSE3 0
+#endif
+
+#if NME_SIMD_SSSE3 || (NME_SIMD_ENABLED && defined(__SSE3__))
+    #define NME_SIMD_SSE3 1
+#else
+    #define NME_SIMD_SSE3 0
+#endif
+
+#if NME_SIMD_SSE3 || (NME_SIMD_ENABLED && (defined(__SSE2__) || NME_ARCH_X64 || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
+    #define NME_SIMD_SSE2 1
+#else
+    #define NME_SIMD_SSE2 0
+#endif
+
+#if NME_SIMD_SSE2 || (NME_SIMD_ENABLED && (defined(__SSE__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)))
+    #define NME_SIMD_SSE 1
+#else
+    #define NME_SIMD_SSE 0
+#endif
+
+// ---- ARM NEON: mandatory on AArch64, opt-in on ARM32 via -mfpu=neon ----
+#if NME_SIMD_ENABLED && (defined(__ARM_NEON) || defined(__ARM_NEON__) || NME_ARCH_ARM64)
+    #define NME_SIMD_NEON 1
+#else
+    #define NME_SIMD_NEON 0
+#endif
+
+// ---- Pull in the correct intrinsics header for whatever is active ----
+#if NME_SIMD_SSE
+    #include <immintrin.h>    // umbrella header: SSE ... AVX2 on GCC/CLANG/MSVC
+#endif
+#if NME_SIMD_NEON
+    #include <arm_neon.h>
+#endif
+
+// ---- Human-readable name for the highest active level (logging / banner) ----
+#if NME_SIMD_AVX2
+    #define NME_SIMD_NAME "AVX2"
+#elif NME_SIMD_AVX
+    #define NME_SIMD_NAME "AVX"
+#elif NME_SIMD_SSE42
+    #define NME_SIMD_NAME "SSE4.2"
+#elif NME_SIMD_SSE41
+    #define NME_SIMD_NAME "SSE4.1"
+#elif NME_SIMD_SSSE3
+    #define NME_SIMD_NAME "SSSE3"
+#elif NME_SIMD_SSE3
+    #define NME_SIMD_NAME "SSE3"
+#elif NME_SIMD_SSE2
+    #define NME_SIMD_NAME "SSE2"
+#elif NME_SIMD_SSE
+    #define NME_SIMD_NAME "SSE"
+#elif NME_SIMD_NEON
+    #define NME_SIMD_NAME "NEON"
+#else
+    #define NME_SIMD_NAME "Scalar"
+#endif
+
+// ============================================================================
 // Build Configuration
 // ============================================================================
 // NME_DEBUG is 1 unless compiled with NDEBUG. MSVC also defines _DEBUG in debug
