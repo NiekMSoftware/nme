@@ -33,10 +33,15 @@ struct Vector : VectorBase<T, N> {
     template<convertible_to<T> X>
     explicit constexpr Vector(X s) noexcept;
 
-    /** @brief Assign from a vector of possibly different size (min copy, zero tail). */
+    /** @brief Any mix of scalars and smaller vectors, flattened left-to-right.
+     *         Trailing slots zero-filled; overflow dropped. */
     template<typename... Args>
         requires(sizeof...(Args) >= 2) && vector_component_pack<T, Args...>
     constexpr Vector(const Args&... args) noexcept;
+
+    /** @brief Assign from a vector possibly different size (min copy, zero tail). */
+    template<convertible_to<T> U, usize M>
+    constexpr Vector<T, N>& operator=(const Vector<U, M>& rhs) noexcept;
 
     // ---- element access ----
 
@@ -94,5 +99,6 @@ using usize4   = Vector<usize, 4>;
 // --------------------------------------------------------------------------
 
 // TODO: fill in inl headers in correct order
+#include "details/vec_ctor.inl"
 
 // EOF
