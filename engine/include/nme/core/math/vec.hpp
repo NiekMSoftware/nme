@@ -4,6 +4,7 @@
 #include <type_traits>
 
 #include "nme/platform/types.h"
+#include "details/vec_base.hpp"
 
 namespace nme::math {
 
