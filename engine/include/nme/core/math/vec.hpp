@@ -1,12 +1,13 @@
 #pragma once
 
 #include "details/vec_base.hpp"
+#include "details/vec_constants.hpp"
 #include "details/vec_traits.hpp"
 
 namespace nme::math {
 
 template<typename T, usize N>
-struct Vector : VectorBase<T, N> {
+struct Vector : VectorBase<T, N>, VectorConstants<T, N> {
 
     using type       = Vector<T, N>;
     using value_type = T;
