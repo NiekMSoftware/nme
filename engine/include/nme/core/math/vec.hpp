@@ -103,6 +103,7 @@ using usize4   = Vector<usize, 4>;
 #include "details/vec_common.inl"
 #include "details/vec_trig.inl"
 #include "details/vec_compare.inl"
+#include "details/vec_swizzle.inl"
 #include "details/vec_constants.inl"
 
 // EOF
