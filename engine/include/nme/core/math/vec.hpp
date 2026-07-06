@@ -25,7 +25,7 @@ template<typename T> inline constexpr bool is_bitwise =
 // --------------------------------------------
 
 // Generic fallback
-template<typename T, u32 N> struct Vector { T data[N]; };
+template<typename T, usize N> struct Vector { T data[N]; };
 
 #define NME_VEC2_MEMBERS(T)                                                    \
     union {                                                                    \
@@ -100,20 +100,40 @@ template <> struct             Vector<f64, 4> { NME_VEC4_MEMBERS(f64); };
 
 // ---------- More accessible Vector Types ----------
 
-// --- f32 vectors ---
-typedef Vector<f32, 2> Vector2f;    // Regular Vector2 using default floating-point precision
-typedef Vector<f32, 3> Vector3f;    // Regular Vector3 using default floating-point precision
-typedef Vector<f32, 4> Vector4f;    // Regular Vector4 using default floating-point precision
+using Vector2f = Vector<f32, 2>;
+using Vector2d = Vector<f64, 2>;
+using Vector2i = Vector<i32, 2>;
+using Vector2u = Vector<u32, 2>;
 
-// --- f64 vectors ---
-typedef Vector<f64, 2> Vector2d;    // Vector2 using a double as floating-point precision
-typedef Vector<f64, 3> Vector3d;    // Vector3 using a double as floating-point precision
-typedef Vector<f64, 4> Vector4d;    // Vector4 using a double as floating-point precision
+using Vector3f = Vector<f32, 3>;
+using Vector3d = Vector<f64, 3>;
+using Vector3i = Vector<i32, 3>;
+using Vector3u = Vector<u32, 3>;
 
-// --- i32 vectors ---
-typedef Vector<i32, 2> Vector2i;    // Vector2 using a signed integer as precision
-typedef Vector<i32, 3> Vector3i;    // Vector3 using a signed integer as precision
-typedef Vector<i32, 4> Vector4i;    // Vector4 using a signed integer as precision
+using Vector4f = Vector<f32, 4>;
+using Vector4d = Vector<f64, 4>;
+using Vector4i = Vector<i32, 4>;
+using Vector4u = Vector<u32, 4>;
+
+using vec2 = Vector<f32, 2>;
+using vec3 = Vector<f32, 3>;
+using vec4 = Vector<f32, 4>;
+
+using float2 = Vector<f32, 2>;
+using float3 = Vector<f32, 3>;
+using float4 = Vector<f32, 4>;
+
+using double2 = Vector<f64, 2>;
+using double3 = Vector<f64, 3>;
+using double4 = Vector<f64, 4>;
+
+using int2 = Vector<i32, 2>;
+using int3 = Vector<i32, 3>;
+using int4 = Vector<i32, 4>;
+
+using uint2 = Vector<u32, 2>;
+using uint3 = Vector<u32, 3>;
+using uint4 = Vector<u32, 4>;
 
 // Lock the layout so it can't drift silently across compilers
 static_assert(sizeof(Vector2f) == 8);
