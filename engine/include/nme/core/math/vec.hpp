@@ -2,75 +2,34 @@
 
 #include <cmath>
 
-#include "details/concepts.hpp"
 #include "details/vec_base.hpp"
+#include "details/vec_traits.hpp"
 
 namespace nme::math {
-
-// --------------------------------------------
-//                   Storage
-// --------------------------------------------
 
 template<typename T, usize N>
 struct Vector : VectorBase<T, N> {
 
-    /** @brief The type of this Vector. */
-    using type = Vector<T, N>;
-
-    /** @brief The Vector value type. */
+    using type       = Vector<T, N>;
     using value_type = T;
+    using size_type  = usize;
 
-    /** @brief The Vector size type. */
-    using size_type = usize;
-
-    /** @brief The number of components of this Vector. */
+    /** @brief Number of components. */
     static constexpr usize comp = N;
 
-    /** @brief Vector base class. */
+    /** @brief Vector base (storage) class. */
     using base = VectorBase<T, N>;
 
-    static const Vector<T, N> zero;
-    static const Vector<T, N> one;
-    static const Vector<T, N> x;
-    static const Vector<T, N> y;
-    static const Vector<T, N> z;
-    static const Vector<T, N> w;
+    // ---- introspection / raw access ----
 
     static constexpr usize size() noexcept;
-
     constexpr T* data() noexcept;
     [[nodiscard]] constexpr const T* data() const noexcept;
 
+    // ---- constructors ----
     constexpr Vector() noexcept;
 
-    template<convertible_to<T> X>
-    explicit constexpr Vector(X s) noexcept;
 
-    template<convertible_to<T> X, convertible_to<T> Y>
-    constexpr Vector(X x_, Y y_) noexcept;
-
-    template<convertible_to<T> X, convertible_to<T> Y, convertible_to<T> Z>
-    constexpr Vector(X x_, Y y_, Z z_) noexcept;
-
-    template<convertible_to<T> X, convertible_to<T> Y, convertible_to<T> Z, convertible_to<T> W>
-    constexpr Vector(X x_, Y y_, Z z_, W w_) noexcept;
-
-    // TODO: construct a vector from a span
-
-    template<convertible_to<T> U, usize M, convertible_to<T>... Args>
-    explicit constexpr Vector(const Vector<U, M>& copy, const Args&... args) noexcept;
-
-    template<convertible_to<T> X, convertible_to<T> U, usize M>
-    constexpr Vector(X x_, const Vector<U, M>& copy);
-
-    template<convertible_to<T> X, convertible_to<T> Y, convertible_to<T> U, usize M>
-    constexpr Vector(X x_, Y y_, const Vector<U, M>& copy);
-
-    template<convertible_to<T> X, convertible_to<T> Y, convertible_to<T> Z, convertible_to<T> U, usize M>
-    constexpr Vector(X x_, Y y_, Z z_, const Vector<U, M>& copy);
-
-    template<convertible_to<T> X, convertible_to<T> Y, convertible_to<T> Z, convertible_to<T> W, convertible_to<T> U, usize M>
-    constexpr Vector(X x_, Y y_, Z z_, W w_, const Vector<U, M>& copy);
 };
 
 // ---------- More accessible Vector Types ----------
