@@ -2,14 +2,10 @@
 
 #include <cmath>
 
-#include "nme/platform/types.h"
+#include "details/concepts.hpp"
 #include "details/vec_base.hpp"
 
 namespace nme::math {
-
-namespace detail {
-
-}  // namespace detail
 
 // --------------------------------------------
 //                   Storage
@@ -30,6 +26,9 @@ struct Vector : VectorBase<T, N> {
     /** @brief The number of components of this Vector. */
     static constexpr usize comp = N;
 
+    /** @brief Vector base class. */
+    using base = VectorBase<T, N>;
+
     static const Vector<T, N> zero;
     static const Vector<T, N> one;
     static const Vector<T, N> x;
@@ -40,16 +39,39 @@ struct Vector : VectorBase<T, N> {
     static constexpr usize size() noexcept;
 
     constexpr T* data() noexcept;
-    constexpr const T* data() const noexcept;
-
-    using base = VectorBase<T, N>;
+    [[nodiscard]] constexpr const T* data() const noexcept;
 
     constexpr Vector() noexcept;
-};
 
-#undef NME_VEC2_MEMBERS
-#undef NME_VEC3_MEMBERS
-#undef NME_VEC4_MEMBERS
+    template<convertible_to<T> X>
+    explicit constexpr Vector(X s) noexcept;
+
+    template<convertible_to<T> X, convertible_to<T> Y>
+    constexpr Vector(X x_, Y y_) noexcept;
+
+    template<convertible_to<T> X, convertible_to<T> Y, convertible_to<T> Z>
+    constexpr Vector(X x_, Y y_, Z z_) noexcept;
+
+    template<convertible_to<T> X, convertible_to<T> Y, convertible_to<T> Z, convertible_to<T> W>
+    constexpr Vector(X x_, Y y_, Z z_, W w_) noexcept;
+
+    // TODO: construct a vector from a span
+
+    template<convertible_to<T> U, usize M, convertible_to<T>... Args>
+    explicit constexpr Vector(const Vector<U, M>& copy, const Args&... args) noexcept;
+
+    template<convertible_to<T> X, convertible_to<T> U, usize M>
+    constexpr Vector(X x_, const Vector<U, M>& copy);
+
+    template<convertible_to<T> X, convertible_to<T> Y, convertible_to<T> U, usize M>
+    constexpr Vector(X x_, Y y_, const Vector<U, M>& copy);
+
+    template<convertible_to<T> X, convertible_to<T> Y, convertible_to<T> Z, convertible_to<T> U, usize M>
+    constexpr Vector(X x_, Y y_, Z z_, const Vector<U, M>& copy);
+
+    template<convertible_to<T> X, convertible_to<T> Y, convertible_to<T> Z, convertible_to<T> W, convertible_to<T> U, usize M>
+    constexpr Vector(X x_, Y y_, Z z_, W w_, const Vector<U, M>& copy);
+};
 
 // ---------- More accessible Vector Types ----------
 
@@ -88,13 +110,9 @@ using uint2 = Vector<u32, 2>;
 using uint3 = Vector<u32, 3>;
 using uint4 = Vector<u32, 4>;
 
-// Lock the layout so it can't drift silently across compilers
-// static_assert(sizeof(Vector2f) == 8);
-// static_assert(sizeof(Vector3f) == 12);
-// static_assert(sizeof(Vector4f) == 16 && alignof(Vector4f) == 16);
-// static_assert(sizeof(Vector4i) == 16 && alignof(Vector4i) == 16);
-// static_assert(std::is_trivially_copyable_v<Vector4f>);
-// static_assert(std::is_standard_layout_v<Vector4f>);
+using usize2 = Vector<usize, 2>;
+using usize3 = Vector<usize, 3>;
+using usize4 = Vector<usize, 4>;
 
 }  // namespace nme::math
 
