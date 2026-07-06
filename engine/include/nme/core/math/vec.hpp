@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include <type_traits>
 
 #include "nme/platform/types.h"
 #include "details/vec_base.hpp"
@@ -9,15 +8,6 @@
 namespace nme::math {
 
 namespace detail {
-
-template<typename T> struct type_identity { using type = T; };
-template<typename T> using type_identity_t = typename type_identity<T>::type;
-
-template<typename T>
-inline constexpr bool is_floating = std::is_floating_point_v<T>;
-
-template<typename T> inline constexpr bool is_bitwise =
-    std::is_integral_v<T> && !std::is_same_v<T, bool>;
 
 }  // namespace detail
 

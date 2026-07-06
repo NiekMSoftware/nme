@@ -4,6 +4,8 @@
 // that buffer aliases the `col` vectors, so results built here read back correctly
 // through operator()/operator[] too
 
+#include "../ext/concepts.h"
+
 namespace nme::math {
 
 // Clip-space conventions for the projection builders
