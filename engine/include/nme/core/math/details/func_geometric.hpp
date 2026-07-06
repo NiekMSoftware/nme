@@ -13,7 +13,19 @@ constexpr T dot(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
     return r;
 }
 
-// TODO: SIMD override
+#if defined(NME_SIMD_SSE)
+// SSE override, chosen by overload resolution.
+inline f32 dot(const Vector<f32, 4>& a, const Vector<f32, 4>& b) noexcept {
+#if defined (NME_SIMD_SSE4)
+    return _mm_cvtss_f32(_mm_dp_ps(a.v, b.v, 0xF1));
+#else
+    const __m128 m = _mm_mul_ps(a.v, b.v);
+    __m128 s = _mm_hadd_ps(m, m);
+    s = _mm_hadd_ps(s, s);
+    return _mm_cvtss_f32(s);
+#endif
+}
+#endif
 
 // -------------------------------- cross ------------------------------------
 // Only defined for 3-component vectors. cross() on a vec2/vec4 is a hard error.
