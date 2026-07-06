@@ -10,9 +10,6 @@ namespace nme::math {
 template<typename T, usize N>
 struct Vector;
 
-template<typename T>
-concept is_signed = std::is_signed_v<T>;
-
 // --------------------------------------------------------------------------
 //  Component-pack support
 //
@@ -54,8 +51,28 @@ concept vector_component_pack =
 template<typename... Args>
 inline constexpr usize total_component_count_v = (component_count_v<Args> + ... + usize{0});
 
-// default tolerance for approximate comparison (equal/is_normalized)
+// Default tolerance for approximate comparison (equal/is_normalized)
 template<typename T>
-inline constexpr T EPSILON = T(1e-5);
+inline constexpr T EPSILON = std::numeric_limits<T>::epsilon();
+
+// Constant for floating-point PI
+template<is_floating T>
+constexpr T PI = T( 3.1415926535897932384626433832795 );
+
+// Constant for floating-point pi/2.
+template<is_floating T>
+constexpr T HALF_PI = PI<T> / T(2);
+
+// Constant for floating-point PI*2
+template<is_floating T>
+constexpr T TWO_PI = PI<T> * T(2);
+
+// Constant for cos(1/2), i.e. the cosine of 0.5 radians.
+template<is_floating T>
+constexpr T COS_ONE_OVER_TWO = T(0.87758256189037271611628158260383);
+
+// Constant for infinity
+template<has_infinity T>
+constexpr T INF = std::numeric_limits<T>::infinity();
 
 }  // namespace nme::math
