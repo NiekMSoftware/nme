@@ -54,4 +54,8 @@ concept vector_component_pack =
 template<typename... Args>
 inline constexpr usize total_component_count_v = (component_count_v<Args> + ... + usize{0});
 
+// default tolerance for approximate comparison (equal/is_normalized)
+template<typename T>
+inline constexpr T EPSILON = T(1e-5);
+
 }  // namespace nme::math
