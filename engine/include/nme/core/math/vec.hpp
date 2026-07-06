@@ -29,10 +29,24 @@ struct Vector : VectorBase<T, N> {
     // ---- constructors ----
     constexpr Vector() noexcept;
 
+    /** @brief Broadcast one scalar to every component. */
+    template<convertible_to<T> X>
+    explicit constexpr Vector(X s) noexcept;
 
+    /** @brief Assign from a vector of possibly different size (min copy, zero tail). */
+    template<typename... Args>
+        requires(sizeof...(Args) >= 2) && vector_component_pack<T, Args...>
+    constexpr Vector(const Args&... args) noexcept;
+
+    // ---- element access ----
+
+    constexpr T& operator[](usize i) noexcept;
+    constexpr const T& operator[](usize i) const noexcept;
 };
 
-// ---------- More accessible Vector Types ----------
+// --------------------------------------------------------------------------
+// Aliases
+// --------------------------------------------------------------------------
 
 using Vector2f = Vector<f32, 2>;
 using Vector2d = Vector<f64, 2>;
@@ -49,32 +63,36 @@ using Vector4d = Vector<f64, 4>;
 using Vector4i = Vector<i32, 4>;
 using Vector4u = Vector<u32, 4>;
 
-using vec2 = Vector<f32, 2>;
-using vec3 = Vector<f32, 3>;
-using vec4 = Vector<f32, 4>;
+using vec2     = Vector<f32, 2>;
+using vec3     = Vector<f32, 3>;
+using vec4     = Vector<f32, 4>;
 
-using float2 = Vector<f32, 2>;
-using float3 = Vector<f32, 3>;
-using float4 = Vector<f32, 4>;
+using float2   = Vector<f32, 2>;
+using float3   = Vector<f32, 3>;
+using float4   = Vector<f32, 4>;
 
-using double2 = Vector<f64, 2>;
-using double3 = Vector<f64, 3>;
-using double4 = Vector<f64, 4>;
+using double2  = Vector<f64, 2>;
+using double3  = Vector<f64, 3>;
+using double4  = Vector<f64, 4>;
 
-using int2 = Vector<i32, 2>;
-using int3 = Vector<i32, 3>;
-using int4 = Vector<i32, 4>;
+using int2     = Vector<i32, 2>;
+using int3     = Vector<i32, 3>;
+using int4     = Vector<i32, 4>;
 
-using uint2 = Vector<u32, 2>;
-using uint3 = Vector<u32, 3>;
-using uint4 = Vector<u32, 4>;
+using uint2    = Vector<u32, 2>;
+using uint3    = Vector<u32, 3>;
+using uint4    = Vector<u32, 4>;
 
-using usize2 = Vector<usize, 2>;
-using usize3 = Vector<usize, 3>;
-using usize4 = Vector<usize, 4>;
+using usize2   = Vector<usize, 2>;
+using usize3   = Vector<usize, 3>;
+using usize4   = Vector<usize, 4>;
 
 }  // namespace nme::math
 
-#include "details/vec.inl"
+// --------------------------------------------------------------------------
+// Implementation
+// --------------------------------------------------------------------------
+
+// TODO: fill in inl headers in correct order
 
 // EOF
