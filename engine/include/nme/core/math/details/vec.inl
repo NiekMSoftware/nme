@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../ext/concepts.h"
+#include "../concepts.h"
 
 namespace nme::math {
 

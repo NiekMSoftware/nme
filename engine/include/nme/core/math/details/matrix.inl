@@ -4,7 +4,7 @@
 // that buffer aliases the `col` vectors, so results built here read back correctly
 // through operator()/operator[] too
 
-#include "../ext/concepts.h"
+#include "../concepts.h"
 
 namespace nme::math {
 
