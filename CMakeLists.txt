@@ -9,7 +9,7 @@ set(NME_PROJECT_VERSION_MAJOR 0)
 set(NME_PROJECT_VERSION_MINOR 1)
 set(NME_PROJECT_VERSION_PATCH 6)
 
-set(NME_CXX_VERSION 17)
+set(NME_CXX_VERSION 20)
 
 # =========================================================
 #						Project
