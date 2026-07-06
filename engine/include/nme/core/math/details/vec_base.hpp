@@ -1,5 +1,7 @@
 #pragma once
 
+#include "nme/platform/types.h"
+
 namespace nme::math {
 /** @brief Base class of all vectors. */
 template<typename T, usize N>
@@ -59,7 +61,7 @@ struct VectorBase<T, 3> {
 
 template <typename T>
 constexpr VectorBase<T, 3>::VectorBase() noexcept
-: data{}
+    : data{}
 { }
 
 /** @brief Partial specialization for 4-component vectors. */
@@ -80,7 +82,7 @@ struct VectorBase<T, 4> {
 
 template <typename T>
 constexpr VectorBase<T, 4>::VectorBase() noexcept
-: data{}
+    : data{}
 { }
 
 #if defined(NME_SSE)
