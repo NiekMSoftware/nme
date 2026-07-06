@@ -1,5 +1,4 @@
 #pragma once
-#include <glm/fwd.hpp>
 
 namespace nme::math {
 /** @brief Base class of all vectors. */
