@@ -4,6 +4,9 @@
 
 namespace nme::math {
 
+template<typename From, typename To>
+inline constexpr bool convertible_to = std::is_convertible_v<From, To>;
+
 template<typename T> struct type_identity { using type = T; };
 template<typename T> using type_identity_t = typename type_identity<T>::type;
 
