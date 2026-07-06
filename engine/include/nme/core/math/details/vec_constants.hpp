@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./concepts.hpp"
+#include "../concepts.hpp"
 #include "nme/platform/types.h"
 
 namespace nme::math {
