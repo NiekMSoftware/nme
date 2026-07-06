@@ -101,5 +101,6 @@ using usize4   = Vector<usize, 4>;
 // TODO: fill in inl headers in correct order
 #include "details/vec_ctor.inl"
 #include "details/vec_ops.inl"
+#include "details/vec_geometric.inl"
 
 // EOF
