@@ -23,6 +23,9 @@ set(NME_PLATFORM_HEADERS
     include/nme/platform/debug/assert.h
     include/nme/platform/debug/debug_break.h
 
+    # Graphics
+    include/nme/platform/graphics/clip_space.h
+
     # Threading
     include/nme/platform/thread/atomics.h
     include/nme/platform/thread/condition_variable.h
