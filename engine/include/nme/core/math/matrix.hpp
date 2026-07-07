@@ -45,7 +45,7 @@ struct Matrix : MatrixBase<T, N, M>, MatrixConstants<T, N, M> {
     // ---- row access: m[i] ----
 
     constexpr Vector<T, M>& operator[](usize i) noexcept;
-    constexpr const Vector<T, M> operator[](usize i) const noexcept;
+    constexpr const Vector<T, M>& operator[](usize i) const noexcept;
 
     // ---- element access: m(i, j) ----
 
@@ -108,3 +108,4 @@ using umat4 = Matrix<u32, 4, 4>;
 // --------------------------------------------------------------------------
 
 // TODO: fill in inline headers
+#include "details/matrix_ctor.inl"
