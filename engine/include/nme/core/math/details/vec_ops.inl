@@ -115,6 +115,16 @@ constexpr Vector<T, N>& operator/=(Vector<T, N>& v, U s) noexcept {
     return v;
 }
 
+// ---------------------------- bitwise: unary -------------------------------
+// Integer element types only. `is_bitwise` excludes bool, since bitwise ops on
+// a bool-mask vector are meaningless (use negate/any/all for masks instead).
+
+template<typename T, usize N>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator~(const Vector<T, N>& v) noexcept {
+    return detail::map(v, [](T x) { return static_cast<T>(~x); });
+}
+
 // ------------------------------ comparison ---------------------------------
 
 template<typename T, usize N>
@@ -131,5 +141,92 @@ constexpr auto operator<=>(const Vector<T, N>& a, const Vector<T, N>& b) noexcep
         if (auto c = a[i] <=> b[i]; c != 0) return c;
     return a[N-1] <=> b[N-1];   // equal: return the equal-category of value T
 }
+
+// ------------------------- bitwise: vector <op> vector ---------------------
+
+template<typename T, usize N>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator&(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+    return detail::zip(a, b, [](T x, T y) { return x & y; });
+}
+
+template<typename T, usize N>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator|(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+    return detail::zip(a, b, [](T x, T y) { return x | y; });
+}
+
+template<typename T, usize N>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator^(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+    return detail::zip(a, b, [](T x, T y) { return x ^ y; });
+}
+
+// Shifts by a matching vector of counts: each lane shifted by its own count.
+template<typename T, usize N>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator<<(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+    return detail::zip(a, b, [](T x, T y) { return x << y; });
+}
+
+template<typename T, usize N>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator>>(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+    return detail::zip(a, b, [](T x, T y) { return x >> y; });
+}
+
+// ------------------------- bitwise: vector <op> scalar ---------------------
+// Broadcast the scalar to every lane. Shifts by a scalar are the common case
+// (v << 2 shifts every component by 2).
+
+template<typename T, usize N, convertible_to<T> U>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator&(const Vector<T, N>& v, U s) noexcept {
+    const T t = static_cast<T>(s);
+    return detail::map(v, [t](T x) { return static_cast<T>(x & t); });
+}
+
+template<typename T, usize N, convertible_to<T> U>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator|(const Vector<T, N>& v, U s) noexcept {
+    const T t = static_cast<T>(s);
+    return detail::map(v, [t](T x) { return static_cast<T>(x | t); });
+}
+
+template<typename T, usize N, convertible_to<T> U>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator^(const Vector<T, N>& v, U s) noexcept {
+    const T t = static_cast<T>(s);
+    return detail::map(v, [t](T x) { return static_cast<T>(x ^ t); });
+}
+
+template<typename T, usize N, convertible_to<T> U>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator<<(const Vector<T, N>& v, U s) noexcept {
+    const T t = static_cast<T>(s);
+    return detail::map(v, [t](T x) { return static_cast<T>(x << t); });
+}
+
+template<typename T, usize N, convertible_to<T> U>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator>>(const Vector<T, N>& v, U s) noexcept {
+    const T t = static_cast<T>(s);
+    return detail::map(v, [t](T x) { return static_cast<T>(x >> t); });
+}
+
+// & | ^ with the scalar on the left are commutative; single definitions.
+template<typename T, usize N, convertible_to<T> U>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator&(U s, const Vector<T, N>& v) noexcept { return v & s; }
+
+template<typename T, usize N, convertible_to<T> U>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator|(U s, const Vector<T, N>& v) noexcept { return v | s; }
+
+template<typename T, usize N, convertible_to<T> U>
+    requires is_bitwise<T>
+constexpr Vector<T, N> operator^(U s, const Vector<T, N>& v) noexcept { return v ^ s; }
+// NOTE: no scalar-on-left shift (s << v) - shifting a scalar by a vector of
+// counts has no sensible single-result meaning.
 
 }  // namespace nme::math
