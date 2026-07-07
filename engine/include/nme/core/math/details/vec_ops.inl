@@ -46,12 +46,12 @@ constexpr Vector<T, N> operator-(const Vector<T, N>& a, const Vector<T, N>& b) {
 
 template<typename T, usize N>
 constexpr Vector<T, N> operator*(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
-    return detail::zip(a, [](T x, T y) { return x * y; });
+    return detail::zip(a, b, [](T x, T y) { return x * y; });
 }
 
 template<typename T, usize N>
 constexpr Vector<T, N> operator/(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
-    return detail::zip(a, [](T x, T y) { return x / y; });
+    return detail::zip(a, b, [](T x, T y) { return x / y; });
 }
 
 // ------------------------- vector <op>= vector -----------------------------
@@ -63,19 +63,19 @@ constexpr Vector<T, N>& operator+=(Vector<T, N>& a, const Vector<T, N>& b) noexc
 }
 
 template<typename T, usize N>
-constexpr Vector<T, N>& operator-=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+constexpr Vector<T, N>& operator-=(Vector<T, N>& a, const Vector<T, N>& b) noexcept {
     for (usize i = 0; i < N; ++i) a[i] -= b[i];
     return a;
 }
 
 template<typename T, usize N>
-constexpr Vector<T, N>& operator*=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+constexpr Vector<T, N>& operator*=(Vector<T, N>& a, const Vector<T, N>& b) noexcept {
     for (usize i = 0; i < N; ++i) a[i] *= b[i];
     return a;
 }
 
 template<typename T, usize N>
-constexpr Vector<T, N>& operator/=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+constexpr Vector<T, N>& operator/=(Vector<T, N>& a, const Vector<T, N>& b) noexcept {
     for (usize i = 0; i < N; ++i) a[i] /= b[i];
     return a;
 }
@@ -101,14 +101,14 @@ constexpr Vector<T, N> operator/(const Vector<T, N>& v, U s) noexcept {
 }
 
 template<typename T, usize N, convertible_to<T> U>
-constexpr Vector<T, N> operator*=(Vector<T, N>& v, U s) noexcept {
+constexpr Vector<T, N>& operator*=(Vector<T, N>& v, U s) noexcept {
     const T t = static_cast<T>(s);
     for (usize i = 0; i < N; ++i) v[i] *= t;
     return v;
 }
 
 template<typename T, usize N, convertible_to<T> U>
-constexpr Vector<T, N> operator/=(Vector<T, N>& v, U s) noexcept {
+constexpr Vector<T, N>& operator/=(Vector<T, N>& v, U s) noexcept {
     NME_ASSERT(static_cast<T>(s) != T(0));
     const T t = static_cast<T>(s);
     for (usize i = 0; i < N; ++i) v[i] /= t;
