@@ -33,7 +33,7 @@ constexpr Matrix<T, N, M> operator-(const Matrix<T, N, M>& m) noexcept {
     return detail::map(m, [](T x) { return -x; });
 }
 
-// --------------------------- matrix <op> matrix -----------------------------
+// --------------------------- matrix <op> matrix ----------------------------
 
 template<typename T, usize N, usize M>
 constexpr Matrix<T, N, M> operator+(const Matrix<T, N, M>& a, const Matrix<T, N, M>& b) noexcept {
@@ -53,6 +53,123 @@ constexpr Matrix<T, N, M> operator*(const Matrix<T, N, M>& a, const Matrix<T, N,
 template<typename T, usize N, usize M>
 constexpr Matrix<T, N, M> operator/(const Matrix<T, N, M>& a, const Matrix<T, N, M> b) noexcept {
     return detail::zip(a, b, [](T x, T y) { return x / y; });
+}
+
+// --------------------------- matrix <op>= matrix ----------------------------
+
+template<typename T, usize N, usize M>
+constexpr Matrix<T, N, M>& operator +=(Matrix<T, N, M>& a, const Matrix<T, N, M>& b) noexcept {
+    for (usize i = 0; i < N * M; ++i) a.data()[i] += b.data()[i];
+    return a;
+}
+
+template<typename T, usize N, usize M>
+constexpr Matrix<T, N, M>& operator -=(Matrix<T, N, M>& a, const Matrix<T, N, M>& b) noexcept {
+    for (usize i = 0; i < N * M; ++i) a.data()[i] -= b.data()[i];
+    return a;
+}
+
+template<typename T, usize N, usize M>
+constexpr Matrix<T, N, M>& operator *=(Matrix<T, N, M>& a, const Matrix<T, N, M>& b) noexcept {
+    for (usize i = 0; i < N * M; ++i) a.data()[i] *= b.data()[i];
+    return a;
+}
+
+template<typename T, usize N, usize M>
+constexpr Matrix<T, N, M>& operator /=(Matrix<T, N, M>& a, const Matrix<T, N, M>& b) noexcept {
+    for (usize i = 0; i < N * M; ++i) a.data()[i] /= b.data()[i];
+    return a;
+}
+
+// -------------------- matrix <op> scalar (broadcast) -----------------------
+
+template<typename T, usize N, usize M, convertible_to<T> U>
+constexpr Matrix<T, N, M>& operator*(const Matrix<T, N, M>& m, U s) noexcept {
+    const T t = static_cast<T>(s);
+    return detail::map(m, [t](T x) { return x * t; });
+}
+
+template<typename T, usize N, usize M, convertible_to<T> U>
+constexpr Matrix<T, N, M>& operator*(U s, const Matrix<T, N, M>& m) noexcept {
+    return m * s;  // commutative
+}
+
+template<typename T, usize N, usize M, convertible_to<T> U>
+constexpr Matrix<T, N, M> operator/(const Matrix<T, N, M>& m, U s) noexcept {
+    NME_ASSERT(static_cast<T>(s) != T(0));
+    const T t = static_cast<T>(s);
+    return detail::map(m, [t](T x) { return x / t; });
+}
+
+template<typename T, usize N, usize M, convertible_to<T> U>
+constexpr Matrix<T, N, M>& operator*=(Matrix<T, N, M>& m, U s) noexcept {
+    const T t = static_cast<T>(s);
+    for (usize i = 0; i < N * M; ++i) m.data()[i] *= t;
+    return m;
+}
+
+template<typename T, usize N, usize M, convertible_to<T> U>
+constexpr Matrix<T, N, M>& operator/=(Matrix<T, N, M>& m, U s) noexcept {
+    NME_ASSERT(static_cast<T>(s) != T(0));
+    const T t = static_cast<T>(s);
+    for (usize i = 0; i < N * M; ++i) m.data()[i] /= t;
+    return m;
+}
+
+// ---------------------------- matrix product ------------------------------
+
+// Matrix * Matrix: (N*M) * (M*P) -> (N*P)
+template<typename T, usize N, usize M, usize P>
+constexpr Matrix<T, N, P> operator*(const Matrix<T, N, M>& a, const Matrix<T, N, P>& b) noexcept {
+    Matrix<T, N, P> r{};
+    for (usize i = 0; i < N; ++i)
+        for (usize j = 0; j < P; ++j)
+            for (usize k = 0; k < N; ++k)
+                r(i, j) += a(i, k) * b(k, j);
+    return r;
+}
+
+// Treats vector as a column vector. Result is the transformed vector.
+template<typename T, usize N, usize M>
+constexpr Vector<T, N> operator*(const Matrix<T, N, M>& m, const Vector<T, M>& v) noexcept {
+    Vector<T, N> r{};
+    for (usize i = 0; i < N; ++i)
+        for (usize j = 0; j < M; ++j)
+            r[i] += m(i, j) * v[j];
+    return r;
+}
+
+// Treats vector as a row vector. Result is the transformed vector.
+template<typename T, usize N, usize M>
+constexpr Vector<T, M> operator*(const Vector<T, N>& v, const Matrix<T, N, M>& m) noexcept {
+    Vector<T, M> r{};
+    for (usize i = 0; i < N; ++i)
+        for (usize j = 0; j < M; ++j)
+            r[i] += v[i] * m(i, j);
+    return r;
+}
+
+// Matrix *= Matrix: (N*M) *= (M*M) -> (N*M) [only for square right operand]
+template<typename T, usize N, usize M>
+constexpr Matrix<T, N, M>& operator*=(Matrix<T, N, M>& a, const Matrix<T, M, M>& b) noexcept {
+    a *= b;
+    return a;
+}
+
+// ------------------------------ comparison ----------------------------------
+
+template<typename T, usize N, usize M>
+constexpr bool operator==(const Matrix<T, N, M>& a, const Matrix<T, N, M>& b) noexcept {
+    for (usize i = 0; i < N; ++i)
+        if (!(a.data()[i] == b.data()[i])) return false;
+    return true;
+}
+
+template<typename T, usize N, usize M>
+constexpr auto operator<=>(const Matrix<T, N, M>& a, const Matrix<T, N, M>& b) noexcept {
+    for (usize i = 0; i < N; ++i)
+        if (auto c = a.data()[i] <=> b.data()[i]; c != 0) return c;
+    return a.data()[N * M - 1] <=> b.data()[N * M - 1];
 }
 
 }  // namespace nme::math
