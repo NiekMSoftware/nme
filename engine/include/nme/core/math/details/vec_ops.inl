@@ -233,35 +233,35 @@ constexpr Vector<T, N> operator^(U s, const Vector<T, N>& v) noexcept { return v
 
 template<typename T, usize N>
     requires is_bitwise<T>
-constexpr Vector<T, N>& operator&=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+constexpr Vector<T, N>& operator&=(Vector<T, N>& a, const Vector<T, N>& b) noexcept {
     for (usize i = 0; i < N; ++i) a[i] &= b[i];
     return a;
 }
 
 template<typename T, usize N>
     requires is_bitwise<T>
-constexpr Vector<T, N>& operator|=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+constexpr Vector<T, N>& operator|=(Vector<T, N>& a, const Vector<T, N>& b) noexcept {
     for (usize i = 0; i < N; ++i) a[i] |= b[i];
     return a;
 }
 
 template<typename T, usize N>
     requires is_bitwise<T>
-constexpr Vector<T, N>& operator^=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+constexpr Vector<T, N>& operator^=(Vector<T, N>& a, const Vector<T, N>& b) noexcept {
     for (usize i = 0; i < N; ++i) a[i] ^= b[i];
     return a;
 }
 
 template<typename T, usize N>
     requires is_bitwise<T>
-constexpr Vector<T, N>& operator<<=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+constexpr Vector<T, N>& operator<<=(Vector<T, N>& a, const Vector<T, N>& b) noexcept {
     for (usize i = 0; i < N; ++i) a[i] <<= b[i];
     return a;
 }
 
 template<typename T, usize N>
     requires is_bitwise<T>
-constexpr Vector<T, N>& operator>>=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+constexpr Vector<T, N>& operator>>=(Vector<T, N>& a, const Vector<T, N>& b) noexcept {
     for (usize i = 0; i < N; ++i) a[i] >>= b[i];
     return a;
 }
@@ -270,35 +270,35 @@ constexpr Vector<T, N>& operator>>=(const Vector<T, N>& a, const Vector<T, N>& b
 
 template<typename T, usize N, convertible_to<T> U>
 requires is_bitwise<T>
-constexpr Vector<T, N>& operator&=(const Vector<T, N>& a, U s) {
+constexpr Vector<T, N>& operator&=(Vector<T, N>& a, U s) {
     for (usize i = 0; i < N; ++i) a[i] &= s;
     return a;
 }
 
 template<typename T, usize N, convertible_to<T> U>
 requires is_bitwise<T>
-constexpr Vector<T, N>& operator|=(const Vector<T, N>& a, U s) {
+constexpr Vector<T, N>& operator|=(Vector<T, N>& a, U s) {
     for (usize i = 0; i < N; ++i) a[i] |= s;
     return a;
 }
 
 template<typename T, usize N, convertible_to<T> U>
 requires is_bitwise<T>
-constexpr Vector<T, N>& operator^=(const Vector<T, N>& a, U s) {
+constexpr Vector<T, N>& operator^=(Vector<T, N>& a, U s) {
     for (usize i = 0; i < N; ++i) a[i] ^= s;
     return a;
 }
 
 template<typename T, usize N, convertible_to<T> U>
 requires is_bitwise<T>
-constexpr Vector<T, N>& operator<<=(const Vector<T, N>& a, U s) {
+constexpr Vector<T, N>& operator<<=(Vector<T, N>& a, U s) {
     for (usize i = 0; i < N; ++i) a[i] <<= s;
     return a;
 }
 
 template<typename T, usize N, convertible_to<T> U>
 requires is_bitwise<T>
-constexpr Vector<T, N>& operator>>=(const Vector<T, N>& a, U s) {
+constexpr Vector<T, N>& operator>>=(Vector<T, N>& a, U s) {
     for (usize i = 0; i < N; ++i) a[i] >>= s;
     return a;
 }
