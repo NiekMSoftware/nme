@@ -1,11 +1,16 @@
 #pragma once
 
-#include <type_traits>
-
-#include "./vec.hpp"
-#include "nme/platform/types.h"
+#include "details/matrix_base.hpp"
 
 namespace nme::math {
+
+template<typename T, usize N, usize M = N>
+struct Matrix : MatrixBase<T, N, M> {
+    using value_type = T;
+    using size_type  = usize;
+
+    using base = MatrixBase<T, N, M>;
+};
 
 // ---------- More accessible matrix type aliases ----------
 
