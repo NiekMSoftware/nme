@@ -56,25 +56,25 @@ constexpr Vector<bool, N> negate(const Vector<bool, N>& v) noexcept {
 // single bool. Scalar-epsilon overload broadcasts.
 
 template<typename T, usize N>
-constexpr Vector<bool, N> equal(const Vector<bool, N>& a, const Vector<bool, N>& b,
+constexpr Vector<bool, N> equal(const Vector<T, N>& a, const Vector<T, N>& b,
                                 const Vector<T, N>& epsilon) noexcept {
     return lessThanEqual(abs(a - b), epsilon);
 }
 
 template<typename T, usize N, convertible_to<T> U>
-constexpr Vector<bool, N> equal(const Vector<bool, N>& a, const Vector<bool, N>& b,
+constexpr Vector<bool, N> equal(const Vector<T, N>& a, const Vector<T, N>& b,
                                 U epsilon = EPSILON<T>) noexcept {
     return equal(a, b, Vector<T, N>(static_cast<T>(epsilon)));
 }
 
 template<typename T, usize N>
-constexpr Vector<bool, N> notEqual(const Vector<bool, N>& a, const Vector<bool, N>& b,
+constexpr Vector<bool, N> notEqual(const Vector<T, N>& a, const Vector<T, N>& b,
                                    const Vector<T, N>& epsilon) noexcept {
     return negate(equal(a, b, epsilon));
 }
 
 template<typename T, usize N, convertible_to<T> U>
-constexpr Vector<bool, N> notEqual(const Vector<bool, N>& a, const Vector<bool, N>& b,
+constexpr Vector<bool, N> notEqual(const Vector<T, N>& a, const Vector<T, N>& b,
                                    U epsilon = EPSILON<T>) noexcept {
     return negate(equal(a, b, epsilon));
 }
