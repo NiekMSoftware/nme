@@ -129,7 +129,7 @@ template<typename T, usize N>
 constexpr auto operator<=>(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
     for (usize i = 0; i < N; ++i)
         if (auto c = a[i] <=> b[i]; c != 0) return c;
-    return a[0] <=> b[0];   // equal: return the equal-category of value T
+    return a[N-1] <=> b[N-1];   // equal: return the equal-category of value T
 }
 
 }  // namespace nme::math
