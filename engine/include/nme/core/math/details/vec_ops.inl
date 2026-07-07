@@ -229,4 +229,78 @@ constexpr Vector<T, N> operator^(U s, const Vector<T, N>& v) noexcept { return v
 // NOTE: no scalar-on-left shift (s << v) - shifting a scalar by a vector of
 // counts has no sensible single-result meaning.
 
+// ------------------------- bitwise: vector <op>= vector --------------------
+
+template<typename T, usize N>
+    requires is_bitwise<T>
+constexpr Vector<T, N>& operator&=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+    for (usize i = 0; i < N; ++i) a[i] &= b[i];
+    return a;
+}
+
+template<typename T, usize N>
+    requires is_bitwise<T>
+constexpr Vector<T, N>& operator|=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+    for (usize i = 0; i < N; ++i) a[i] |= b[i];
+    return a;
+}
+
+template<typename T, usize N>
+    requires is_bitwise<T>
+constexpr Vector<T, N>& operator^=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+    for (usize i = 0; i < N; ++i) a[i] ^= b[i];
+    return a;
+}
+
+template<typename T, usize N>
+    requires is_bitwise<T>
+constexpr Vector<T, N>& operator<<=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+    for (usize i = 0; i < N; ++i) a[i] <<= b[i];
+    return a;
+}
+
+template<typename T, usize N>
+    requires is_bitwise<T>
+constexpr Vector<T, N>& operator>>=(const Vector<T, N>& a, const Vector<T, N>& b) noexcept {
+    for (usize i = 0; i < N; ++i) a[i] >>= b[i];
+    return a;
+}
+
+// ------------------------- bitwise: vector <op>= scalar --------------------
+
+template<typename T, usize N, convertible_to<T> U>
+requires is_bitwise<T>
+constexpr Vector<T, N>& operator&=(const Vector<T, N>& a, U s) {
+    for (usize i = 0; i < N; ++i) a[i] &= s;
+    return a;
+}
+
+template<typename T, usize N, convertible_to<T> U>
+requires is_bitwise<T>
+constexpr Vector<T, N>& operator|=(const Vector<T, N>& a, U s) {
+    for (usize i = 0; i < N; ++i) a[i] |= s;
+    return a;
+}
+
+template<typename T, usize N, convertible_to<T> U>
+requires is_bitwise<T>
+constexpr Vector<T, N>& operator^=(const Vector<T, N>& a, U s) {
+    for (usize i = 0; i < N; ++i) a[i] ^= s;
+    return a;
+}
+
+template<typename T, usize N, convertible_to<T> U>
+requires is_bitwise<T>
+constexpr Vector<T, N>& operator<<=(const Vector<T, N>& a, U s) {
+    for (usize i = 0; i < N; ++i) a[i] <<= s;
+    return a;
+}
+
+template<typename T, usize N, convertible_to<T> U>
+requires is_bitwise<T>
+constexpr Vector<T, N>& operator>>=(const Vector<T, N>& a, U s) {
+    for (usize i = 0; i < N; ++i) a[i] >>= s;
+    return a;
+}
+
 }  // namespace nme::math
