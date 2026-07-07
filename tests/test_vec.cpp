@@ -337,17 +337,56 @@ TEST_CASE("vec: operator<=> gives lexicographic order (for containers)") {
 //     Guarded: enable once the integer bitwise operators land in the library
 //     (the test_vec.cpp banner mentions them, but they are not in vec_ops.inl).
 // ===========================================================================
-#if defined(NME_VEC_HAS_BITWISE)
-TEST_CASE("vec: bitwise ops on integer vectors") {
+TEST_CASE("vec: bitwise vector op vector") {
     Vector3i a{0b1100, 0b1010, 0b1111};
     Vector3i b{0b1010, 0b0110, 0b0001};
     CHECK((a & b) == Vector3i{0b1000, 0b0010, 0b0001});
     CHECK((a | b) == Vector3i{0b1110, 0b1110, 0b1111});
     CHECK((a ^ b) == Vector3i{0b0110, 0b1100, 0b1110});
-    CHECK((a << Vector3i{1, 1, 1}) == Vector3i{0b11000, 0b10100, 0b11110});
-    CHECK((a >> Vector3i{1, 1, 1}) == Vector3i{0b0110, 0b0101, 0b0111});
+    CHECK((~a) == Vector3i{~0b1100, ~0b1010, ~0b1111});
+    CHECK((a << Vector3i{1, 2, 3}) == Vector3i{0b1100 << 1, 0b1010 << 2, 0b1111 << 3});
+    CHECK((a >> Vector3i{1, 2, 3}) == Vector3i{0b1100 >> 1, 0b1010 >> 2, 0b1111 >> 3});
 }
-#endif
+
+TEST_CASE("vec: bitwise vector op scalar (broadcast)") {
+    Vector3u v{0b1100u, 0b1010u, 0b0110u};
+    CHECK((v & 0b0110u) == Vector3u{0b0100u, 0b0010u, 0b0110u});
+    CHECK((v | 0b0001u) == Vector3u{0b1101u, 0b1011u, 0b0111u});
+    CHECK((v ^ 0b1111u) == Vector3u{0b0011u, 0b0101u, 0b1001u});
+    CHECK((v << 1u) == Vector3u{0b11000u, 0b10100u, 0b01100u});
+    CHECK((v >> 1u) == Vector3u{0b0110u, 0b0101u, 0b0011u});
+    // & | ^ are commutative with the scalar on the left.
+    CHECK((0b0110u & v) == (v & 0b0110u));
+    CHECK((0b0001u | v) == (v | 0b0001u));
+    CHECK((0b1111u ^ v) == (v ^ 0b1111u));
+}
+
+TEST_CASE("vec: bitwise compound-assign") {
+    SUBCASE("vector rhs") {
+        Vector3i v{0b1100, 0b1010, 0b1111};
+        Vector3i m{0b1010, 0b0110, 0b0001};
+        Vector3i& ref = (v &= m);
+        CHECK(&ref == &v);   // returns *this
+        CHECK(v == Vector3i{0b1000, 0b0010, 0b0001});
+        v = Vector3i{0b1100, 0b1010, 0b1111}; v |= m;
+        CHECK(v == Vector3i{0b1110, 0b1110, 0b1111});
+        v = Vector3i{0b1100, 0b1010, 0b1111}; v ^= m;
+        CHECK(v == Vector3i{0b0110, 0b1100, 0b1110});
+        v = Vector3i{1, 2, 3}; v <<= Vector3i{1, 1, 1};
+        CHECK(v == Vector3i{2, 4, 6});
+        v = Vector3i{8, 4, 2}; v >>= Vector3i{1, 1, 1};
+        CHECK(v == Vector3i{4, 2, 1});
+    }
+    SUBCASE("scalar rhs") {
+        Vector3u v{0b1100u, 0b1010u, 0b0110u};
+        v &= 0b0110u;
+        CHECK(v == Vector3u{0b0100u, 0b0010u, 0b0110u});
+        v = Vector3u{0b1100u, 0b1010u, 0b0110u}; v |= 0b0001u;
+        CHECK(v == Vector3u{0b1101u, 0b1011u, 0b0111u});
+        v = Vector3u{0b1100u, 0b1010u, 0b0110u}; v <<= 2u;
+        CHECK(v == Vector3u{0b110000u, 0b101000u, 0b011000u});
+    }
+}
 
 // ===========================================================================
 //  7. Geometric functions
