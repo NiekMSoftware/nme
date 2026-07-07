@@ -10,21 +10,21 @@ template<typename T, usize N>
 constexpr usize Vector<T, N>::size() noexcept { return N; }
 
 template<typename T, usize N>
-constexpr T* Vector<T, N>::data() noexcept { return &base::data[0]; }
+constexpr T* Vector<T, N>::data() noexcept { return &base::vec[0]; }
 
 template<typename T, usize N>
-constexpr const T* Vector<T, N>::data() const noexcept { return &base::data[0]; }
+constexpr const T* Vector<T, N>::data() const noexcept { return &base::vec[0]; }
 
 template <typename T, usize N>
 constexpr T& Vector<T, N>::operator[](usize i) noexcept {
     NME_ASSERT(i < N);
-    return base::data[i];
+    return base::vec[i];
 }
 
 template<typename T, usize N>
 constexpr const T& Vector<T, N>::operator[](usize i) const noexcept {
     NME_ASSERT(i < N);
-    return base::data[i];
+    return base::vec[i];
 }
 
 // ------------------------------ constructors -------------------------------
@@ -36,7 +36,7 @@ template <typename T, usize N>
 template <convertible_to<T> X>
 constexpr Vector<T, N>::Vector(X s) noexcept {
     for (usize i = 0; i < N; ++i)
-        base::data[i] = static_cast<T>(s);
+        base::vec[i] = static_cast<T>(s);
 }
 
 // --- component-pack helpers (write one argument, advance the cursor) ---
@@ -61,9 +61,9 @@ template <typename... Args>
     requires(sizeof...(Args) >= 2) && vector_component_pack<T, Args...>
 constexpr Vector<T, N>::Vector(const Args&... args) noexcept {
     usize i = 0;
-    (detail::vec_emplace(base::data, i, args), ...);
+    (detail::vec_emplace(base::vec, i, args), ...);
     for (; i < N; ++i)
-        base::data[i] = T(0);
+        base::vec[i] = T(0);
 }
 
 // --------------------------------- assign ----------------------------------
@@ -76,9 +76,9 @@ constexpr Vector<T, N>& Vector<T, N>::operator=(const Vector<U, M>& rhs) noexcep
     constexpr usize c = (N < M) ? N : M;
     usize i = 0;
     for (; i < c; ++i)
-        base::data[i] = static_cast<T>(rhs[i]);
+        base::vec[i] = static_cast<T>(rhs[i]);
     for (; i < N; ++i)
-        base::data[i] = T(0);
+        base::vec[i] = T(0);
     return *this;
 }
 

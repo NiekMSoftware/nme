@@ -10,12 +10,12 @@ template<typename T, usize N>
 struct VectorBase {
     constexpr VectorBase() noexcept;
 
-    T data[N];
+    T vec[N];
 };
 
 template <typename T, usize N>
 constexpr VectorBase<T, N>::VectorBase() noexcept
-    : data{}
+    : vec{}
 { }
 
 /** @brief Partial specialization for 2-component vectors. */
@@ -36,13 +36,13 @@ struct VectorBase<T, 2> {
         struct {
             T u, v;
         };
-        T data[2];
+        T vec[2];
     };
 };
 
 template <typename T>
 constexpr VectorBase<T, 2>::VectorBase() noexcept
-    : data{}
+    : vec{}
 { }
 
 /** @brief Partial specialization for 3-component vectors. */
@@ -57,13 +57,13 @@ struct VectorBase<T, 3> {
         struct {
             T r, g, b;
         };
-        T data[3];
+        T vec[3];
     };
 };
 
 template <typename T>
 constexpr VectorBase<T, 3>::VectorBase() noexcept
-    : data{}
+    : vec{}
 { }
 
 /** @brief Partial specialization for 4-component vectors. */
@@ -78,13 +78,13 @@ struct VectorBase<T, 4> {
         struct {
             T r, g, b, a;
         };
-        T data[4];
+        T vec[4];
     };
 };
 
 template <typename T>
 constexpr VectorBase<T, 4>::VectorBase() noexcept
-    : data{}
+    : vec{}
 { }
 
 #if defined(NME_SIMD_SSE)
@@ -101,14 +101,14 @@ struct alignas(16) VectorBase<f32, 4> {
         struct {
             f32 r, g, b, a;
         };
-        f32 data[4];
+        f32 vec[4];
         __m128 v;
     };
 
     explicit constexpr operator __m128() const noexcept;
 };
 constexpr VectorBase<float, 4>::VectorBase() noexcept
-    : data {}
+    : vec {}
 { }
 constexpr VectorBase<float, 4>::VectorBase(__m128 v) noexcept
     : v {v}
