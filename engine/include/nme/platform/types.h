@@ -9,48 +9,44 @@
 
 #include "nme/platform/platform.h"
 
+#include <cstddef>
+#include <cstdint>
+
 namespace nme {
 
-#if NME_COMPILER_MSVC
-	typedef signed  __int8  i8;
-	typedef signed  __int16 i16;
-	typedef signed  __int32 i32;
-	typedef signed  __int64 i64;
+typedef std::int8_t  i8;
+typedef std::int16_t i16;
+typedef std::int32_t i32;
+typedef std::int64_t i64;
 
-	typedef unsigned __int8  u8;
-	typedef unsigned __int16 u16;
-	typedef unsigned __int32 u32;
-	typedef unsigned __int64 u64;
-#elif NME_COMPILER_GCC || NME_COMPILER_CLANG
-	typedef __INT8_TYPE__   i8;
-	typedef __INT16_TYPE__  i16;
-	typedef __INT32_TYPE__  i32;
-	typedef __INT64_TYPE__  i64;
+using int8 = i8;
+using int16 = i16;
+using int32 = i32;
+using int64 = i64;
 
-	typedef __UINT8_TYPE__  u8;
-	typedef __UINT16_TYPE__ u16;
-	typedef __UINT32_TYPE__ u32;
-	typedef __UINT64_TYPE__ u64;
-#endif
+typedef std::uint8_t  u8;
+typedef std::uint16_t u16;
+typedef std::uint32_t u32;
+typedef std::uint64_t u64;
 
-#if NME_64BIT
-	typedef u64 usize;
-	typedef i64 ptrdiff_type;
+using uint8 = u8;
+using uint16 = u16;
+using uint32 = u32;
+using uint64 = u64;
 
-	typedef i64 iptr;
-	typedef u64 uptr;
-#elif NME_32BIT
-	typedef u32 usize;
-	typedef i32 ptrdiff_type;
+typedef std::size_t    usize;
+typedef std::ptrdiff_t ptrdiff_type;
 
-	typedef i32 iptr;
-	typedef u32 uptr;
-#endif
+typedef std::intptr_t  iptr;
+typedef std::uintptr_t uptr;
 
 typedef float  f32;
 typedef double f64;
 
-typedef u8 b8;		 ///< Natural choice for packed flag fields where each byte counts.
+using float32 = float;
+using float64 = double;
+
+typedef u8  b8;      ///< Natural choice for packed flag fields where each byte counts.
 typedef i32 b32;     ///< Matches most different ABIs their BOOL32 flags.
 
 static_assert(sizeof(i8) == 1, "NME: i8 must be 1 byte");
