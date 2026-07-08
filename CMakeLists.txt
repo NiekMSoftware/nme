@@ -62,8 +62,8 @@ include(cmake/sanitizers.cmake)
 # =========================================================
 add_subdirectory(engine)
 add_subdirectory(apps/sandbox)
-add_subdirectory(apps/cache_bench)
-add_subdirectory(apps/job_bench)
+add_subdirectory(apps/benchmarks/cache_bench)
+add_subdirectory(apps/benchmarks/job_bench)
 
 if (NME_BUILD_ASAN_CHECK)
 	add_subdirectory(apps/asan_check)
