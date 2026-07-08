@@ -176,4 +176,152 @@ constexpr Matrix<T, 4, 4> perspective(T fov, T aspect, T near, T far) noexcept {
 #endif
 }
 
+template<typename T>
+    requires is_floating<T>
+constexpr Matrix<T, 4, 4> orthographic_lh_01(T l, T r, T b, T t, T n, T f) noexcept {
+    const T w = T(1) / (r - l);
+    const T h = T(1) / (b - t);
+    const T d = T(1) / (f - n);
+
+    return Matrix<T, 4, 4>(
+        T(2) * w, T(0),     T(0), -(r + l) * w,
+        T(0),     T(2) * h, T(0), -(t + b) * h,
+        T(0),     T(0),     d,    -n * d,
+        T(0),     T(0),     T(0),  T(1)
+    );
+}
+
+template<typename T>
+requires is_floating<T>
+constexpr Matrix<T, 4, 4> orthographic_lh_11(T l, T r, T b, T t, T n, T f) noexcept {
+    const T w = T(1) / (r - l);
+    const T h = T(1) / (b - t);
+    const T d = T(1) / (f - n);
+
+    return Matrix<T, 4, 4>(
+        T(2) * w, T(0),     T(0),     -(r + l) * w,
+        T(0),     T(2) * h, T(0),     -(t + b) * h,
+        T(0),     T(0),     T(2) * d, -(f + n) * d,
+        T(0),     T(0),     T(0),      T(1)
+    );
+}
+
+template<typename T>
+requires is_floating<T>
+constexpr Matrix<T, 4, 4> orthographic_rh_01(T l, T r, T b, T t, T n, T f) noexcept {
+    const T w = T(1) / (r - l);
+    const T h = T(1) / (b - t);
+    const T d = T(1) / (f - n);
+
+    return Matrix<T, 4, 4>(
+        T(2) * w, T(0),     T(0), -(r + l) * w,
+        T(0),     T(2) * h, T(0), -(t + b) * h,
+        T(0),     T(0),     d,     n * d,
+        T(0),     T(0),     T(0),  T(1)
+    );
+}
+
+template<typename T>
+requires is_floating<T>
+constexpr Matrix<T, 4, 4> orthographic_rh_11(T l, T r, T b, T t, T n, T f) noexcept {
+    const T w = T(1) / (r - l);
+    const T h = T(1) / (b - t);
+    const T d = T(1) / (f - n);
+
+    return Matrix<T, 4, 4>(
+        T(2) * w, T(0),     T(0),     -(r + l) * w,
+        T(0),     T(2) * h, T(0),     -(t + b) * h,
+        T(0),     T(0),     T(2) * d,  (f + n) * d,
+        T(0),     T(0),     T(0),      T(1)
+    );
+}
+
+template<typename T>
+requires is_floating<T>
+constexpr Matrix<T, 4, 4> orthographic(T l, T r, T b, T t, T n, T f) noexcept {
+#if NME_HANDEDNESS == NME_LEFT_HANDED && NME_DEPTH_RANGE == NME_DEPTH_ZERO_TO_ONE
+    return orthographic_lh_01(l, r, b, t, n, f);
+#elif NME_HANDEDNESS == NME_LEFT_HANDED && NME_DEPTH_RANGE == NME_DEPTH_NEG_ONE_TO_ONE
+    return orthographic_lh_11(l, r, b, t, n, f);
+#elif NME_HANDEDNESS == NME_RIGHT_HANDED && NME_DEPTH_RANGE == NME_DEPTH_ZERO_TO_ONE
+    return orthographic_rh_01(l, r, b, t, n, f);
+#else
+    return orthographic_rh_11(l, r, b, t, n, f);
+#endif
+}
+
+template<typename T>
+requires is_floating<T>
+constexpr Matrix<T, 4, 4> look_to_lh(const Vector<T, 3>& eye,
+                                     const Vector<T, 3>& dir,
+                                     const Vector<T, 3>& up = Vector<T, 3>::up) noexcept {
+    const Vector<T, 3> f = normalize(dir);
+    const Vector<T, 3> r = normalize(cross(up, f));
+    const Vector<T, 3> u = cross(f, r);
+
+    return Matrix<T, 4, 4>(
+        r.x, r.y, r.z, -dot(r, eye),
+        u.x, u.y, u.z, -dot(u, eye),
+        f.x, f.y, f.z, -dot(f, eye),
+        T(0), T(0), T(0), T(1)
+    );
+}
+
+template<typename T>
+requires is_floating<T>
+constexpr Matrix<T, 4, 4> look_to_rh(const Vector<T, 3>& eye,
+                                     const Vector<T, 3>& dir,
+                                     const Vector<T, 3>& up = Vector<T, 3>::up) noexcept {
+    const Vector<T, 3> f = normalize(-dir);
+    const Vector<T, 3> r = normalize(cross(up, f));
+    const Vector<T, 3> u = cross(f, r);
+
+    return Matrix<T, 4, 4>(
+        r.x, r.y, r.z, -dot(r, eye),
+        u.x, u.y, u.z, -dot(u, eye),
+        f.x, f.y, f.z, -dot(f, eye),
+        T(0), T(0), T(0), T(1)
+    );
+}
+
+template<typename T>
+requires is_floating<T>
+constexpr Matrix<T, 4, 4> look_at_lh(const Vector<T, 3>& eye,
+                                     const Vector<T, 3>& target,
+                                     const Vector<T, 3>& up = Vector<T, 3>::up) noexcept {
+    return look_to_lh(eye, target - eye, up);
+}
+
+template<typename T>
+requires is_floating<T>
+constexpr Matrix<T, 4, 4> look_at_rh(const Vector<T, 3>& eye,
+                                     const Vector<T, 3>& target,
+                                     const Vector<T, 3>& up = Vector<T, 3>::up) noexcept {
+    return look_at_rh(eye, target - eye, up);
+}
+
+template<typename T>
+requires is_floating<T>
+constexpr Matrix<T, 4, 4> look_at(const Vector<T, 3>& eye,
+    const Vector<T, 3>& target,
+    const Vector<T, 3>& up = Vector<T, 3>::up) noexcept {
+#if NME_HANDEDNESS == NME_LEFT_HANDED
+    return look_at_lh(eye, target, up);
+#else
+    return look_at_rh(eye, target eye, up);
+#endif
+}
+
+template<typename T>
+requires is_floating<T>
+constexpr Matrix<T, 4, 4> look_to(const Vector<T, 3>& eye,
+                                  const Vector<T, 3>& dir,
+                                  const Vector<T, 3>& up = Vector<T, 3>::up) noexcept {
+#if NME_HANDEDNESS == NME_LEFT_HANDED
+    return look_to_lh(eye, dir, up);
+#else
+    return look_to_rh(eye, dir, up);
+#endif
+}
+
 }  // namespace nme::math
