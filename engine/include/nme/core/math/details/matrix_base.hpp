@@ -11,11 +11,11 @@ struct MatrixBase {
 
     union {
         Vector<T, M> row[N];
-        T            m[N * M];
+        T            mat[N * M];
     };
 };
 template <typename T, usize N, usize M>
-constexpr MatrixBase<T, N, M>::MatrixBase() noexcept : m {} { }
+constexpr MatrixBase<T, N, M>::MatrixBase() noexcept : mat {} { }
 
 template <typename T, usize M>
 struct MatrixBase<T, 2, M> {
@@ -25,10 +25,10 @@ struct MatrixBase<T, 2, M> {
         Vector<T, M> X, Y;
     };
     Vector<T, M> row[2];
-    T            m[2 * M];
+    T            mat[2 * M];
 };
 template <typename T, usize M>
-constexpr MatrixBase<T, 2, M>::MatrixBase() noexcept : m{} { }
+constexpr MatrixBase<T, 2, M>::MatrixBase() noexcept : mat{} { }
 
 template <typename T, usize M>
 struct MatrixBase<T, 3, M> {
@@ -38,10 +38,10 @@ struct MatrixBase<T, 3, M> {
         Vector<T, M> X, Y, Z;
     };
     Vector<T, M> row[3];
-    T            m[3 * M];
+    T            mat[3 * M];
 };
 template <typename T, usize M>
-constexpr MatrixBase<T, 3, M>::MatrixBase() noexcept : m{} { }
+constexpr MatrixBase<T, 3, M>::MatrixBase() noexcept : mat{} { }
 
 template <typename T, usize M>
 struct MatrixBase<T, 4, M> {
@@ -51,9 +51,9 @@ struct MatrixBase<T, 4, M> {
         Vector<T, M> X, Y, Z, W;
     };
     Vector<T, M> row[4];
-    T            m[4 * M];
+    T            mat[4 * M];
 };
 template <typename T, usize M>
-constexpr MatrixBase<T, 4, M>::MatrixBase() noexcept : m{} { }
+constexpr MatrixBase<T, 4, M>::MatrixBase() noexcept : mat{} { }
 
 }  // nme::math

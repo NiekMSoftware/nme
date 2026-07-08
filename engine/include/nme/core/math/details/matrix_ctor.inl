@@ -16,7 +16,7 @@ template <typename T, usize N, usize M>
 constexpr usize Matrix<T, N, M>::size() noexcept { return N * M; }
 
 template <typename T, usize N, usize M>
-constexpr T* Matrix<T, N, M>::data() noexcept { return &base::m[0]; }
+constexpr T* Matrix<T, N, M>::data() noexcept { return &base::mat[0]; }
 
 // Row access: m[i] returns a Vector<T, M> (reference or const-ref).
 template <typename T, usize N, usize M>
@@ -33,13 +33,13 @@ constexpr const Vector<T, M>& Matrix<T, N, M>::operator[](usize i) const noexcep
 template <typename T, usize N, usize M>
 constexpr T& Matrix<T, N, M>::operator()(const usize i, const usize j) noexcept {
     NME_ASSERT(i < N && j < M);
-    return base::m[i * M + j];
+    return base::mat[i * M + j];
 }
 
 template <typename T, usize N, usize M>
 constexpr const T& Matrix<T, N, M>::operator()(const usize i, const usize j) const noexcept {
     NME_ASSERT(i < N && j < M);
-    return base::m[i * M + j];
+    return base::mat[i * M + j];
 }
 
 // ------------------------------ constructors --------------------------------
@@ -51,7 +51,7 @@ template <typename T, usize N, usize M>
 template <convertible_to<T> X>
 constexpr Matrix<T, N, M>::Matrix(X s) noexcept {
     for (usize i = 0; i < N; ++i)
-        base::m[i] = static_cast<T>(s);
+        base::mat[i] = static_cast<T>(s);
 }
 
 // Component-pack constructor: mix of scalars and smaller matrices/vectors.
@@ -82,9 +82,9 @@ template<typename... Args>
     requires(sizeof...(Args) >= 2) && matrix_component_pack<T, Args...>
 constexpr Matrix<T, N, M>::Matrix(const Args&... args) noexcept {
     usize i = 0;
-    (detail::mat_emplace(base::m, i, args), ...);
+    (detail::mat_emplace(base::mat, i, args), ...);
     for (; i < N * M; ++i)
-        base::m[i] = T(0);
+        base::mat[i] = T(0);
 }
 
 // Initialize from a larger or smaller matrix (min copy, zero-fill tail if needed).
@@ -97,7 +97,7 @@ constexpr Matrix<T, N, M>::Matrix(const Matrix<U, K, L>& other) noexcept {
     // Copy the overlapping region
     for (usize i = 0; i < rows_to_copy; ++i)
         for (usize j = 0; j < cols_to_copy; ++j)
-            base::m[i * M + j] = static_cast<T>(other(i, j));
+            base::mat[i * M + j] = static_cast<T>(other(i, j));
 
     // Zero-fill the rest
     for (usize k = rows_to_copy * M; k < N * M; ++k)
@@ -117,7 +117,7 @@ constexpr Matrix<T, N, M>& Matrix<T, N, M>::operator=(const Matrix<U, K, L>& rhs
     // Copy the overlapping region
     for (usize i = 0; i < rows_to_copy; ++i)
         for (usize j = 0; j < cols_to_copy; ++j)
-            base::m[i * M + j] = static_cast<T>(rhs(i, j));
+            base::mat[i * M + j] = static_cast<T>(rhs(i, j));
 
     // Zero-fill the rest
     for (usize k = rows_to_copy * M; k < N * M; ++k)
