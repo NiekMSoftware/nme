@@ -109,4 +109,107 @@ constexpr T determinant(const Matrix<T, N, N>& m) noexcept {
     return determinant_impl<T, N>::determinant(m);
 }
 
+template<typename T, usize N>
+struct inverse_impl;
+
+// 1x1 inverse: 1 / m[0][0]
+template<typename T>
+struct inverse_impl<T, 1> {
+    static constexpr Matrix<T, 1, 1> inverse(const Matrix<T, 1, 1>& m) noexcept {
+        NME_ASSERT(m(0, 0) != T(0));
+        return Matrix<T, 1, 1>(T(1) / m(0, 0));
+    }
+};
+
+// 2x2 inverse: (1/det) x adj(A)
+template<typename T>
+struct inverse_impl<T, 2> {
+    static constexpr Matrix<T, 2, 2> inverse(const Matrix<T, 2, 2>& m) noexcept {
+        const T det = determinant(m);
+        NME_ASSERT(det != T(0));
+        const T inv_det = T(1) / det;
+        return Matrix<T, 2, 2>(
+            m(1, 1) * inv_det, -m(0, 1) * inv_det,
+           -m(1, 0) * inv_det,  m(0, 0) * inv_det
+        );
+    }
+};
+
+// 3x3 inverse: (1/det) x adj(A)
+template<typename T>
+struct inverse_impl<T, 3> {
+    static constexpr Matrix<T, 3, 3> inverse(const Matrix<T, 3, 3>& m) noexcept {
+        const T det = determinant(m);
+        NME_ASSERT(det != T(0));
+        const T inv_det = T(1) / det;
+
+        const T c00 =  (m(1, 1) * m(2, 2) - m(1, 2) * m(2, 1));
+        const T c01 = -(m(1, 0) * m(2, 2) - m(1, 2) * m(2, 0));
+        const T c02 =  (m(1, 0) * m(2, 1) - m(1, 1) * m(2, 0));
+
+        const T c10 = -(m(0, 1) * m(2, 2) - m(0, 2) * m(2, 1));
+        const T c11 =  (m(0, 0) * m(2, 2) - m(0, 2) * m(2, 0));
+        const T c12 = -(m(0, 0) * m(2, 1) - m(0, 1) * m(2, 0));
+
+        const T c20 =  (m(0, 1) * m(1, 2) - m(0, 2) * m(1, 1));
+        const T c21 = -(m(0, 0) * m(1, 2) - m(0, 2) * m(1, 0));
+        const T c22 =  (m(0, 0) * m(1, 1) - m(0, 1) * m(1, 0));
+
+        return Matrix<T, 3, 3>(
+            c00 * inv_det, c10 * inv_det, c20 * inv_det,
+            c01 * inv_det, c11 * inv_det, c21 * inv_det,
+            c12 * inv_det, c22 * inv_det, c22 * inv_det
+        );
+    }
+};
+
+// 4x4 inverse using adjugate (Cramer's rule). See standard graphics reference.
+template<typename T>
+struct inverse_impl<T, 4> {
+    static constexpr T cofactor_2x2(T m00, T m01, T m10, T m11) noexcept {
+        return m00 * m11 - m01 * m10;
+    }
+
+    static constexpr T cofactor_3x3(const Matrix<T, 4, 4>& m, const usize row, const usize col) noexcept {
+        // Extract 3x3 minor by removing row and column.
+        T entries[9];
+        usize idx = 0;
+        for (usize i = 0; i < 4; ++i) {
+            if (i == row) continue;
+            for (usize j = 0; j < 4; ++j) {
+                if (j == col) continue;
+                entries[idx++] = m(i, j);
+            }
+        }
+
+        // Compute 3x3 determinant
+        return entries[0] * (entries[4] * entries[8] - entries[5] * entries[7])
+             - entries[1] * (entries[3] * entries[8] - entries[5] * entries[6])
+             + entries[2] * (entries[3] * entries[7] - entries[4] * entries[6]);
+    }
+
+    static constexpr Matrix<T, 4, 4> inverse(const Matrix<T, 4, 4>& m) noexcept {
+        const T det = determinant(m);
+        NME_ASSERT(det != T(0));
+        const T inv_det = T(1) / det;
+
+        // Compute the cofactor matrix.
+        Matrix<T, 4, 4> cof;
+        for (usize i = 0; i < 4; ++i) {
+            for (usize j = 0; j < 4; ++j) {
+                const T sign = ((i + j) % 2 == 0) ? T(1) : T(0);
+                cof(i, j) = sign * cofactor_3x3(m, i, j);
+            }
+        }
+
+        // Adjugate is the transpose of cofactor matrix
+        return transpose(cof) * inv_det;
+    }
+};
+
+template<typename T, usize N>
+constexpr Matrix<T, N, N> inverse(const Matrix<T, N, N>& m) noexcept {
+    return inverse_impl<T, N>::inverse(m);
+}
+
 }  // namespace nme::math
