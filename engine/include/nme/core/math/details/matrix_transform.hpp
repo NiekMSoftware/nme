@@ -53,8 +53,8 @@ constexpr Matrix<T, 4, 4> rotate_y(T angle) noexcept {
     const T s = std::sin(angle);
     return Matrix<T, 4, 4>(
         c,    T(0), s,    T(0),
-        T(0), T(1), T(1), T(0),
-        -s,   T(1), c,    T(0),
+        T(0), T(1), T(0), T(0),
+        -s,   T(0), c,    T(0),
         T(0), T(0), T(0), T(1)
     );
 }
@@ -85,7 +85,7 @@ constexpr Matrix<T, 4, 4> rotate_axis_angle(const Vector<T, 3>& axis, T angle) n
     return Matrix<T, 4, 4>(
         t*x*x + c,   t*x*y - z*s, t*x*z + y*s, T(0),
         t*x*y + z*s, t*y*y + c,   t*y*z - x*s, T(0),
-        t*x*z - y*s, t*y*z + x*z, t*z*z + c,   T(0),
+        t*x*z - y*s, t*y*z + x*s, t*z*z + c,   T(0),
         T(0),        T(0),        T(0),        T(1)
     );
 }
@@ -140,7 +140,7 @@ constexpr Matrix<T, 4, 4> perspective_rh_01(T fov, T aspect, T n, T f) noexcept 
         d / aspect, T(0), T(0),   T(0),
         T(0),       d,    T(0),   T(0),
         T(0),       T(0), f * nf, n * f * nf,
-        T(0),       T(0), T(1),   T(0)
+        T(0),       T(0), -T(1),  T(0)
     );
 }
 
@@ -158,7 +158,7 @@ constexpr Matrix<T, 4, 4> perspective_rh_11(T fov, T aspect, T n, T f) noexcept 
         d / aspect, T(0), T(0),         T(0),
         T(0),       d,    T(0),         T(0),
         T(0),       T(0), (f + n) * nf, T(2) * n * f * nf,
-        T(0),       T(0), T(1),         T(0)
+        T(0),       T(0), -T(1),        T(0)
     );
 }
 
@@ -170,9 +170,9 @@ constexpr Matrix<T, 4, 4> perspective(T fov, T aspect, T near, T far) noexcept {
 #elif NME_HANDEDNESS == NME_LEFT_HANDED && NME_DEPTH_RANGE == NME_DEPTH_NEG_ONE_TO_ONE
     return perspective_lh_11(fov, aspect, near, far);
 #elif NME_HANDEDNESS == NME_RIGHT_HANDED && NME_DEPTH_RANGE == NME_DEPTH_ZERO_TO_ONE
-    return perspective_rh_01(fovy, aspect, n, f);
+    return perspective_rh_01(fov, aspect, near, far);
 #else
-    return perspective_rh_11(fovy, aspect, n, f);
+    return perspective_rh_11(fov, aspect, near, far);
 #endif
 }
 
@@ -180,7 +180,7 @@ template<typename T>
     requires is_floating<T>
 constexpr Matrix<T, 4, 4> orthographic_lh_01(T l, T r, T b, T t, T n, T f) noexcept {
     const T w = T(1) / (r - l);
-    const T h = T(1) / (b - t);
+    const T h = T(1) / (t - b);
     const T d = T(1) / (f - n);
 
     return Matrix<T, 4, 4>(
@@ -195,7 +195,7 @@ template<typename T>
 requires is_floating<T>
 constexpr Matrix<T, 4, 4> orthographic_lh_11(T l, T r, T b, T t, T n, T f) noexcept {
     const T w = T(1) / (r - l);
-    const T h = T(1) / (b - t);
+    const T h = T(1) / (t - b);
     const T d = T(1) / (f - n);
 
     return Matrix<T, 4, 4>(
@@ -210,13 +210,13 @@ template<typename T>
 requires is_floating<T>
 constexpr Matrix<T, 4, 4> orthographic_rh_01(T l, T r, T b, T t, T n, T f) noexcept {
     const T w = T(1) / (r - l);
-    const T h = T(1) / (b - t);
+    const T h = T(1) / (t - b);
     const T d = T(1) / (f - n);
 
     return Matrix<T, 4, 4>(
         T(2) * w, T(0),     T(0), -(r + l) * w,
         T(0),     T(2) * h, T(0), -(t + b) * h,
-        T(0),     T(0),     d,     n * d,
+        T(0),     T(0),     -d,    -n * d,
         T(0),     T(0),     T(0),  T(1)
     );
 }
@@ -225,13 +225,13 @@ template<typename T>
 requires is_floating<T>
 constexpr Matrix<T, 4, 4> orthographic_rh_11(T l, T r, T b, T t, T n, T f) noexcept {
     const T w = T(1) / (r - l);
-    const T h = T(1) / (b - t);
+    const T h = T(1) / (t - b);
     const T d = T(1) / (f - n);
 
     return Matrix<T, 4, 4>(
         T(2) * w, T(0),     T(0),     -(r + l) * w,
         T(0),     T(2) * h, T(0),     -(t + b) * h,
-        T(0),     T(0),     T(2) * d,  (f + n) * d,
+        T(0),     T(0),     -T(2) * d, -(f + n) * d,
         T(0),     T(0),     T(0),      T(1)
     );
 }
@@ -297,7 +297,7 @@ requires is_floating<T>
 constexpr Matrix<T, 4, 4> look_at_rh(const Vector<T, 3>& eye,
                                      const Vector<T, 3>& target,
                                      const Vector<T, 3>& up = Vector<T, 3>::up) noexcept {
-    return look_at_rh(eye, target - eye, up);
+    return look_to_rh(eye, target - eye, up);
 }
 
 template<typename T>
@@ -308,7 +308,7 @@ constexpr Matrix<T, 4, 4> look_at(const Vector<T, 3>& eye,
 #if NME_HANDEDNESS == NME_LEFT_HANDED
     return look_at_lh(eye, target, up);
 #else
-    return look_at_rh(eye, target eye, up);
+    return look_at_rh(eye, target, up);
 #endif
 }
 

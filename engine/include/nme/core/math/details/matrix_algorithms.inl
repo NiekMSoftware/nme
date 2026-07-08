@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 namespace nme::math {
 
 template<typename T, usize N, usize M>
@@ -8,8 +10,8 @@ struct transpose_impl;  // fwd
 // Generic transpose
 template<typename T, usize N, usize M>
 struct transpose_impl {
-    static constexpr Matrix<T, N, M> transpose(const Matrix<T, N, M>& m) noexcept {
-        Matrix<T, N, M> r;
+    static constexpr Matrix<T, M, N> transpose(const Matrix<T, N, M>& m) noexcept {
+        Matrix<T, M, N> r;
         for (usize i = 0; i < N; ++i)
             for (usize j = 0; j < M; ++j)
                 r(j, i) = m(i, j);
@@ -23,7 +25,7 @@ struct transpose_impl<T, N, N> {
     static constexpr Matrix<T, N, N> transpose(const Matrix<T, N, N>& m) noexcept {
         Matrix<T, N, N> r = m;
         for (usize i = 0; i < N; ++i)
-            for (usize j = 0; j < N; ++j)
+            for (usize j = i + 1; j < N; ++j)
                 std::swap(r(i, j), r(j, i));
         return r;
     }
@@ -158,7 +160,7 @@ struct inverse_impl<T, 3> {
         return Matrix<T, 3, 3>(
             c00 * inv_det, c10 * inv_det, c20 * inv_det,
             c01 * inv_det, c11 * inv_det, c21 * inv_det,
-            c12 * inv_det, c22 * inv_det, c22 * inv_det
+            c02 * inv_det, c12 * inv_det, c22 * inv_det
         );
     }
 };
@@ -197,7 +199,7 @@ struct inverse_impl<T, 4> {
         Matrix<T, 4, 4> cof;
         for (usize i = 0; i < 4; ++i) {
             for (usize j = 0; j < 4; ++j) {
-                const T sign = ((i + j) % 2 == 0) ? T(1) : T(0);
+                const T sign = ((i + j) % 2 == 0) ? T(1) : T(-1);
                 cof(i, j) = sign * cofactor_3x3(m, i, j);
             }
         }

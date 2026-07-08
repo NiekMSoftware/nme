@@ -17,6 +17,8 @@ constexpr usize Matrix<T, N, M>::size() noexcept { return N * M; }
 
 template <typename T, usize N, usize M>
 constexpr T* Matrix<T, N, M>::data() noexcept { return &base::mat[0]; }
+template <typename T, usize N, usize M>
+constexpr const T* Matrix<T, N, M>::data() const noexcept { return &base::mat[0]; }
 
 // Row access: m[i] returns a Vector<T, M> (reference or const-ref).
 template <typename T, usize N, usize M>
@@ -50,7 +52,7 @@ constexpr Matrix<T, N, M>::Matrix() noexcept = default;
 template <typename T, usize N, usize M>
 template <convertible_to<T> X>
 constexpr Matrix<T, N, M>::Matrix(X s) noexcept {
-    for (usize i = 0; i < N; ++i)
+    for (usize i = 0; i < N * M; ++i)
         base::mat[i] = static_cast<T>(s);
 }
 

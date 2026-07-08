@@ -22,10 +22,10 @@ struct MatrixBase<T, 2, M> {
     constexpr MatrixBase() noexcept;
 
     union {
-        Vector<T, M> X, Y;
+        Vector<T, M> row[2];
+        T            mat[2 * M];
+        struct { Vector<T, M> X, Y; };
     };
-    Vector<T, M> row[2];
-    T            mat[2 * M];
 };
 template <typename T, usize M>
 constexpr MatrixBase<T, 2, M>::MatrixBase() noexcept : mat{} { }
@@ -35,10 +35,10 @@ struct MatrixBase<T, 3, M> {
     constexpr MatrixBase() noexcept;
 
     union {
-        Vector<T, M> X, Y, Z;
+        Vector<T, M> row[3];
+        T            mat[3 * M];
+        struct { Vector<T, M> X, Y, Z; };
     };
-    Vector<T, M> row[3];
-    T            mat[3 * M];
 };
 template <typename T, usize M>
 constexpr MatrixBase<T, 3, M>::MatrixBase() noexcept : mat{} { }
@@ -48,10 +48,10 @@ struct MatrixBase<T, 4, M> {
     constexpr MatrixBase() noexcept;
 
     union {
-        Vector<T, M> X, Y, Z, W;
+        Vector<T, M> row[4];
+        T            mat[4 * M];
+        struct { Vector<T, M> X, Y, Z, W; };
     };
-    Vector<T, M> row[4];
-    T            mat[4 * M];
 };
 template <typename T, usize M>
 constexpr MatrixBase<T, 4, M>::MatrixBase() noexcept : mat{} { }

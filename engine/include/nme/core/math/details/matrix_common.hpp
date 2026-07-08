@@ -60,12 +60,12 @@ constexpr Matrix<T, N, M> sign(const Matrix<T, N, M>& m) noexcept {
     return detail::map(m, [](T x) { return T((x > T(0)) - (x < T(0))); });
 }
 
-// Euclidian norm: sqrt of sum of squared elements.
+// Squared Frobenius norm: sum of squared elements.
 // https://mathworld.wolfram.com/FrobeniusNorm.html
 template<typename T, usize N, usize M>
 constexpr T norm_euclidian_sqrt(Matrix<T, N, M> const& m) noexcept {
     T sum = T(0);
-    for (usize i = 0; i < N; ++i)
+    for (usize i = 0; i < N * M; ++i)
         sum += m.data()[i] * m.data()[i];
     return sum;
 }
@@ -75,20 +75,20 @@ constexpr T norm_euclidian(Matrix<T, N, M> const& m) noexcept {
     return std::sqrt(norm_euclidian_sqrt(m));
 }
 
-// Sum all elements.
+// Sum of all elements.
 template<typename T, usize N, usize M>
-constexpr Matrix<T, N, M> sum(const Matrix<T, N, M>& m) noexcept {
+constexpr T sum(const Matrix<T, N, M>& m) noexcept {
     T r = T(0);
-    for (usize i = 0; i < N; ++i)
+    for (usize i = 0; i < N * M; ++i)
         r += m.data()[i];
     return r;
 }
 
 // Product of all elements.
 template<typename T, usize N, usize M>
-constexpr Matrix<T, N, M> product(const Matrix<T, N, M>& m) noexcept {
-    Matrix<T, N, M> r;
-    for (usize i = 0; i < N; ++i)
+constexpr T product(const Matrix<T, N, M>& m) noexcept {
+    T r = T(1);
+    for (usize i = 0; i < N * M; ++i)
         r *= m.data()[i];
     return r;
 }

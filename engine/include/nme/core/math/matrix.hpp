@@ -24,6 +24,7 @@ struct Matrix : MatrixBase<T, N, M>, MatrixConstants<T, N, M> {
     static constexpr usize cols() noexcept;
     static constexpr usize size() noexcept;
     [[nodiscard]] constexpr T* data() noexcept;
+    [[nodiscard]] constexpr const T* data() const noexcept;
 
     // ---- constructors ----
 
@@ -113,3 +114,4 @@ using umat4 = Matrix<u32, 4, 4>;
 #include "details/matrix_algorithms.inl"
 #include "details/matrix_common.hpp"
 #include "details/matrix_transform.hpp"
+#include "details/matrix_constants.inl"
