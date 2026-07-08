@@ -111,3 +111,4 @@ using umat4 = Matrix<u32, 4, 4>;
 #include "details/matrix_ctor.inl"
 #include "details/matrix_ops.inl"
 #include "details/matrix_algorithms.inl"
+#include "details/matrix_common.hpp"
