@@ -15,6 +15,7 @@ _deps/
 .vs/
 .vscode/
 .idea/
+.env/
 *.user
 
 # OS
