@@ -10,25 +10,12 @@ struct MatrixConstants {
     static const Matrix<T, N, M> zero;
 };
 
-template<typename T>
+// Square floating matrices also get `identity`.
+template<typename T, usize N>
     requires is_floating<T>
-struct Matrix<T, 2, 2> {
-    static const Matrix<T, 2, 2> zero;
-    static const Matrix<T, 2, 2> identity;
-};
-
-template<typename T>
-    requires is_floating<T>
-struct Matrix<T, 3, 3> {
-    static const Matrix<T, 3, 3> zero;
-    static const Matrix<T, 3, 3> identity;
-};
-
-template<typename T>
-    requires is_floating<T>
-struct Matrix<T, 4, 4> {
-    static const Matrix<T, 4, 4> zero;
-    static const Matrix<T, 4, 4> identity;
+struct MatrixConstants<T, N, N> {
+    static const Matrix<T, N, N> zero;
+    static const Matrix<T, N, N> identity;
 };
 
 }  // namespace nme::math
