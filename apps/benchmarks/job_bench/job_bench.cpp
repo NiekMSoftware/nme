@@ -131,38 +131,48 @@ BENCHMARK(BM_GrainFlat)->Apply(GrainArgs);
 
 //------------------------------------------------------------------------------
 // Frame sim -- distinct job types as dependency phases (anim -> physics ->
-// culling -> render), one fat straggler. One iteration = one frame; Time is
-// ms/frame. The "max" statistic over repetitions is the straggler's worst frame
-// (across-repetition tail; for a true per-frame max use manual timing).
+// culling -> render), one fat straggler. One iteration = one frame, timed by hand
+// so Time is the true mean frame and worst_ms is the real worst SINGLE frame (not
+// an across-repetition aggregate). CPU/Time = cores busy; the gap is barrier idle.
 //------------------------------------------------------------------------------
 void BM_FrameSim(benchmark::State& state) {
     const u32 s = static_cast<u32>(state.range(0));
     const u32 kAnim = 2000 * s, kPhysics = 256 * s, kCulling = 512 * s, kRender = 64 * s;
     constexpr u32 wAnim = 800, wPhysics = 6000, wCulling = 1200, wRender = 4000;
 
+    auto& timer = nme::platform::global_timer();
+    double worstMs = 0.0, sumMs = 0.0;
     for (auto _ : state) {
         NME_PROFILE_FRAME_MARK();
-        { nme::JobCounter c; g_js->runN(kAnim,    [](u32 i){ sink(busyWork(wAnim,    i)); }, c, "anim.pose");     g_js->waitForCounter(c); }
-        { nme::JobCounter c; g_js->runN(kPhysics, [](u32 i){ sink(busyWork(wPhysics, i)); }, c, "physics.solve"); g_js->waitForCounter(c); }
-        { nme::JobCounter c; g_js->runN(kCulling, [](u32 i){ sink(busyWork(wCulling, i)); }, c, "cull.frustum");  g_js->waitForCounter(c); }
+        const u64 t0 = nme::platform::Timer::now();
+
+        { nme::JobCounter c; g_js->parallelFor(kAnim,    [](u32 i){ sink(busyWork(wAnim,    i)); }, c, "anim.pose");     g_js->waitForCounter(c); }
+        { nme::JobCounter c; g_js->parallelFor(kPhysics, [](u32 i){ sink(busyWork(wPhysics, i)); }, c, "physics.solve"); g_js->waitForCounter(c); }
+        { nme::JobCounter c; g_js->parallelFor(kCulling, [](u32 i){ sink(busyWork(wCulling, i)); }, c, "cull.frustum");  g_js->waitForCounter(c); }
         {
             nme::JobCounter c;
-            g_js->runN(kRender, [](u32 i){ sink(busyWork(wRender, i)); }, c, "render.cmdbuf");
-            g_js->run([]{ sink(busyWork(60000, 7)); }, &c, "render.mainpass");  // straggler
+            g_js->parallelFor(kRender, [](u32 i){ sink(busyWork(wRender, i)); }, c, "render.cmdbuf");
+            g_js->run([]{ sink(busyWork(60000, 7)); }, &c, "render.mainpass");  // fat straggler: one job, cannot split
             g_js->waitForCounter(c);
         }
+
+        const double frameSec = timer.to_seconds(nme::platform::Timer::now() - t0);
+        state.SetIterationTime(frameSec);                 // Time column = true per-frame wall
+        const double frameMs = frameSec * 1000.0;
+        sumMs += frameMs;
+        if (frameMs > worstMs) worstMs = frameMs;
     }
-    state.counters["workers"] = static_cast<double>(g_js->workerCount());
+    const double meanMs = sumMs / static_cast<double>(state.iterations());
+    state.counters["worst_ms"]   = worstMs;                            // real worst single frame in the run
+    state.counters["worst/mean"] = meanMs > 0.0 ? worstMs / meanMs : 0.0;  // tail spread; 1.0 = perfectly flat
+    state.counters["workers"]    = static_cast<double>(g_js->workerCount());
 }
 BENCHMARK(BM_FrameSim)
     ->Arg(1)->Arg(4)->Arg(16)
     ->ArgName("scale")
     ->Unit(benchmark::kMillisecond)
-    ->MeasureProcessCPUTime()
-    ->UseRealTime()
-    ->ComputeStatistics("max", [](const std::vector<double>& v) {
-        return *std::max_element(v.begin(), v.end());
-    });
+    ->UseManualTime()          // Time = my per-frame measurement, not GBench's loop timer
+    ->MeasureProcessCPUTime();
 
 //------------------------------------------------------------------------------
 // Correctness -- not a benchmark. Kept as a --verify flag so the file stays a
