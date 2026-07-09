@@ -47,10 +47,12 @@ u64 busyWork(const u32 work, const u32 seed) {
     return acc;
 }
 
-// Global sink so the compiler can't elide the work. Relaxed: we only need the
-// writes to happen, not to be ordered.
-nme::Atomic<u64> g_sink{0};
-inline void sink(const u64 v) { g_sink.fetchAdd(v, nme::MemoryOrder::Relaxed); }
+// Per-thread sink: keeps the compiler from eliding the work without making 15
+// workers ping-pong one cache line (that contention was inflating the ~500 ns/job
+// floor). thread_local has static storage duration so the writes stay live; main
+// anchors it once via DoNotOptimize so it can't be proven dead.
+thread_local u64 t_sink = 0;
+inline void sink(const u64 v) { t_sink += v; }
 
 }  // namespace
 
@@ -79,7 +81,9 @@ BENCHMARK(BM_JobThroughput)
     ->Args({  2'000, 10'000})   // coarse
     ->Args({    500, 50'000})   // fat (realistic engine granularity)
     ->ArgNames({"jobs", "work"})
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kMicrosecond)
+    ->MeasureProcessCPUTime()  // CPU column = all workers, not just main
+    ->UseRealTime();           // Time column (and items/s) = wall clock
 
 //------------------------------------------------------------------------------
 // Frame sim -- distinct job types as dependency phases (anim -> physics ->
@@ -110,6 +114,8 @@ BENCHMARK(BM_FrameSim)
     ->Arg(1)->Arg(4)->Arg(16)
     ->ArgName("scale")
     ->Unit(benchmark::kMillisecond)
+    ->MeasureProcessCPUTime()
+    ->UseRealTime()
     ->ComputeStatistics("max", [](const std::vector<double>& v) {
         return *std::max_element(v.begin(), v.end());
     });
@@ -166,5 +172,6 @@ int main(int argc, char** argv) {
 
     nme::platform::global_timer().shutdown();
     js.shutdown();
+    benchmark::DoNotOptimize(t_sink);  // anchor the per-thread sink
     return rc;
 }

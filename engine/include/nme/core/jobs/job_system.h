@@ -69,12 +69,32 @@ public:
         });
     }
 
-    // Enqueue N jobs against one counter, each invoked as fn(i).
+    // Parallel-for over [0, count): fn is still invoked as fn(i) for every i, but
+    // the range is split into ~kChunksPerWorker*workers chunk-jobs instead of one
+    // job per index.
+    //
+    // grain = minimum items per chunk (0 => auto). NOTE: counter now tracks
+    // chunks, not items -- fine for waitForCounter (== 0), don't read load() as
+    // a remaining-item count.
     template<typename Fn>
-    void runN(const u32 count, Fn fn, JobCounter& counter, const char* name = nullptr) {
-        counter.add(count);
-        for (u32 i = 0; i < count; ++i) {
-            auto task = [fn, i]() mutable { fn(i); };
+    void runN(const u32 count, Fn fn, JobCounter& counter,
+              const char* name = nullptr, const u32 grain = 0) {
+        if (count == 0) return;
+
+        constexpr u32 kChunksPerWorker = 8;  // > 1 so stealing can rebalance uneven work
+        const u32 workers = m_workerCount ? m_workerCount : 1u;
+        u32 chunkSize = grain ? grain
+                              : (count + workers * kChunksPerWorker - 1) / (workers * kChunksPerWorker);
+        if (chunkSize == 0) chunkSize = 1;
+        const u32 chunks = (count + chunkSize - 1) / chunkSize;
+
+        counter.add(chunks);  // MUST match the number of jobs enqueued below
+        for (u32 c = 0; c < chunks; ++c) {
+            const u32 lo = c * chunkSize;
+            const u32 hi = (lo + chunkSize < count) ? lo + chunkSize : count;
+            auto task = [fn, lo, hi]() mutable {
+                for (u32 i = lo; i < hi; ++i) fn(i);
+            };
             enqueue(Job{
                 new detail::JobClosure<decltype(task)>(std::move(task)),
                 &counter,

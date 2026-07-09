@@ -148,8 +148,8 @@ bool JobSystem::getJob(const u32 self, Job& out) const {
     return trySteal(self, out);
 }
 
-void JobSystem::wakeOne() { m_idleCv.notifyOne(); }
-void JobSystem::wakeAll() { m_idleCv.notifyAll(); }
+void JobSystem::wakeOne() { m_idleMutex.lock(); m_idleCv.notifyOne(); m_idleMutex.unlock(); }
+void JobSystem::wakeAll() { m_idleMutex.lock(); m_idleCv.notifyAll(); m_idleMutex.unlock(); }
 
 void JobSystem::runJob(const Job& job) {
     NME_PROFILE_ZONE();
