@@ -126,7 +126,7 @@ private:
     // on this thread's deque), halve the left in place, run the leaf. Recursion
     // flows through the queue, not the stack -- this frame is ~log2(range/grain) deep.
     template<typename Fn>
-    void submitRange(u32 lo, u32 hi, const u32 grain, Fn fn,
+    void submitRange(const u32 lo, u32 hi, const u32 grain, Fn fn,
                      JobCounter& counter, const char* name) {
         while (hi - lo > grain) {
             const u32 mid = lo + (hi - lo) / 2;
