@@ -1,7 +1,6 @@
 #ifndef NME_JOB_SYSTEM_H_
 #define NME_JOB_SYSTEM_H_
 
-#include <deque>    // will be replaced with per-worker Chase-Lev deque
 #include <utility>  // std::forward, std::decay_t
 
 #include "nme/core/jobs/job.h"
@@ -69,13 +68,10 @@ public:
         });
     }
 
-    // Parallel-for over [0, count): fn is still invoked as fn(i) for every i, but
-    // the range is split into ~kChunksPerWorker*workers chunk-jobs instead of one
-    // job per index.
-    //
-    // grain = minimum items per chunk (0 => auto). NOTE: counter now tracks
-    // chunks, not items -- fine for waitForCounter (== 0), don't read load() as
-    // a remaining-item count.
+    // Parallel-for over [0, count): splits into ~kChunksPerWorker*workers chunk
+    // jobs, each looping fn(i). Chunking (vs one job per index) avoids overflowing
+    // the submitter's deque into enqueue()'s inline path. grain = min items/chunk
+    // (0 => auto). Counter tracks chunks, not items.
     template<typename Fn>
     void runN(const u32 count, Fn fn, JobCounter& counter,
               const char* name = nullptr, const u32 grain = 0) {
@@ -103,10 +99,45 @@ public:
         }
     }
 
+    // Recursive-split parallel-for: submits one range that bisects down
+    // to grain, spawning the right half onto the running worker's deque. Spreads
+    // the spawn across deques; counter tracks in-flight jobs. grain = leaf size
+    // (0 => auto). Same signature as runN -- swap the call to A/B.
+    template<typename Fn>
+    void parallelFor(const u32 count, Fn fn, JobCounter& counter,
+                     const char* name = nullptr, u32 grain = 0) {
+        if (count == 0) return;
+        if (grain == 0) {
+            constexpr u32 kLeavesPerWorker = 8;
+            const u32 workers = m_workerCount ? m_workerCount : 1u;
+            grain = (count + workers * kLeavesPerWorker - 1) / (workers * kLeavesPerWorker);
+            if (grain == 0) grain = 1;
+        }
+        // Descend on the calling thread: the left-most leaf runs inline here, the
+        // right halves become stealable jobs. Caller then waitForCounter(counter).
+        submitRange(0, count, grain, fn, counter, name);
+    }
+
     // Block the CALLING thread until the counter hits zero.
     void waitForCounter(const JobCounter& counter) const;
 
 private:
+    // Split [lo, hi): spawn the right half (via run(), so it's counted and lands
+    // on this thread's deque), halve the left in place, run the leaf. Recursion
+    // flows through the queue, not the stack -- this frame is ~log2(range/grain) deep.
+    template<typename Fn>
+    void submitRange(u32 lo, u32 hi, const u32 grain, Fn fn,
+                     JobCounter& counter, const char* name) {
+        while (hi - lo > grain) {
+            const u32 mid = lo + (hi - lo) / 2;
+            run([this, mid, hi, grain, fn, &counter, name]() {
+                    submitRange(mid, hi, grain, fn, counter, name);
+                }, &counter, name);
+            hi = mid;
+        }
+        for (u32 i = lo; i < hi; ++i) fn(i);
+    }
+
     void enqueue(const Job& job);              // push to the CALLING thread's own deque
     bool getJob(u32 self, Job& out) const;    // false if no work available right now
     bool trySteal(u32 self, Job& out) const;  // one random-victim steal sweep

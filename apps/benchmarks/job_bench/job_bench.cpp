@@ -8,6 +8,7 @@
 //
 //   ./nme_bench_jobs                                          # all cases
 //   ./nme_bench_jobs --benchmark_filter=Throughput
+//   ./nme_bench_jobs --benchmark_filter=Grain                # grain sweep: recursive vs flat
 //   ./nme_bench_jobs --benchmark_repetitions=5 \
 //                    --benchmark_report_aggregates_only=true  # median/stddev/cv
 //   ./nme_bench_jobs --verify                                 # correctness, then exit
@@ -67,7 +68,8 @@ void BM_JobThroughput(benchmark::State& state) {
     for (auto _ : state) {
         NME_PROFILE_FRAME_MARK();
         nme::JobCounter counter;
-        g_js->runN(jobs, [work](const u32 i) { sink(busyWork(work, i)); }, counter, "bench.work");
+        // recursive-split dispatch; swap to runN() to A/B against flat chunking
+        g_js->parallelFor(jobs, [work](const u32 i) { sink(busyWork(work, i)); }, counter, "bench.work");
         g_js->waitForCounter(counter);
     }
     state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(jobs));  // -> jobs/s
@@ -84,6 +86,48 @@ BENCHMARK(BM_JobThroughput)
     ->Unit(benchmark::kMicrosecond)
     ->MeasureProcessCPUTime()  // CPU column = all workers, not just main
     ->UseRealTime();           // Time column (and items/s) = wall clock
+
+//------------------------------------------------------------------------------
+// Grain sweep -- fixed workload, vary grain, one row per grain, for both dispatch
+// strategies. Chart median/cv vs grain: recursive (parallelFor) should hold flat
+// where the flat chunker (runN) climbs from submitter-side dispatch pressure. The
+// crossover at the fine end is where per-job overhead overtakes either way.
+//   --benchmark_filter=Grain --benchmark_repetitions=15 --benchmark_report_aggregates_only=true
+//------------------------------------------------------------------------------
+namespace {
+constexpr u32 kSweepJobs = 100'000;  // fixed count; grain (items/leaf) is the axis
+constexpr u32 kSweepWork = 500;
+}  // namespace
+
+void BM_GrainRecursive(benchmark::State& state) {
+    const u32 grain = static_cast<u32>(state.range(0));
+    for (auto _ : state) {
+        NME_PROFILE_FRAME_MARK();
+        nme::JobCounter c;
+        g_js->parallelFor(kSweepJobs, [](u32 i) { sink(busyWork(kSweepWork, i)); }, c, "bench.work", grain);
+        g_js->waitForCounter(c);
+    }
+    state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(kSweepJobs));
+}
+
+void BM_GrainFlat(benchmark::State& state) {
+    const u32 grain = static_cast<u32>(state.range(0));
+    for (auto _ : state) {
+        NME_PROFILE_FRAME_MARK();
+        nme::JobCounter c;
+        g_js->runN(kSweepJobs, [](u32 i) { sink(busyWork(kSweepWork, i)); }, c, "bench.work", grain);
+        g_js->waitForCounter(c);
+    }
+    state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(kSweepJobs));
+}
+
+// coarse -> fine: chunk/leaf count = kSweepJobs / grain = {24, 98, 391, 1563, 6250}
+static void GrainArgs(benchmark::internal::Benchmark* b) {
+    for (int g : {4096, 1024, 256, 64, 16}) b->Arg(g);
+    b->ArgName("grain")->Unit(benchmark::kMicrosecond)->MeasureProcessCPUTime()->UseRealTime();
+}
+BENCHMARK(BM_GrainRecursive)->Apply(GrainArgs);
+BENCHMARK(BM_GrainFlat)->Apply(GrainArgs);
 
 //------------------------------------------------------------------------------
 // Frame sim -- distinct job types as dependency phases (anim -> physics ->
