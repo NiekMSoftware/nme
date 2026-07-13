@@ -1,4 +1,7 @@
 #pragma once
+
+#include "nme/core/subsystem/subsystem.h"
+
 //==============================================================================
 // Low-Level Renderer (Volume II)
 //   Gregory sec. 1.5 -- Low-Level Renderer
@@ -9,6 +12,12 @@
 
 namespace nme {
 
-// (stub -- no declarations yet)
+class Renderer final : public Subsystem {
+public:
+    [[nodiscard]] Error startup() override;
+    void shutdown() override;
+
+    [[nodiscard]] const char* name() const override { return "Renderer"; }
+};
 
 }  // namespace nme

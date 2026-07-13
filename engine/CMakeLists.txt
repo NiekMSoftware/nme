@@ -65,12 +65,18 @@ set(NME_CORE_HEADERS
     include/nme/core/util/unique_handle.h
 )
 
+# --- Renderer ---
+set(NME_RENDERER_SOURCES
+    src/renderer/renderer.cpp
+)
+
 target_sources(nme_engine
     PRIVATE
         src/version.cpp
 
         ${NME_CORE_SOURCES}
         ${NME_PLATFORM_SOURCES}
+        ${NME_RENDERER_SOURCES}
     PUBLIC
         FILE_SET HEADERS
         BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include"
