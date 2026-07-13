@@ -40,10 +40,9 @@ set(NME_PLATFORM_HEADERS
 # --- Core ---
 set(NME_CORE_SOURCES
     src/core/assert.cpp
-
     src/core/jobs/job_system.cpp
-
     src/core/result/error.cpp
+    src/core/subsystem/kernel.cpp
 )
 set(NME_CORE_HEADERS
     include/nme/core/assert/assert.h
