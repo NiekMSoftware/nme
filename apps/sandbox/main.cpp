@@ -1,3 +1,4 @@
+#include <nme/core/jobs/job_system.h>
 #include <nme/core/result/result.h>
 #include <nme/core/subsystem/kernel.h>
 #include <nme/core/subsystem/subsystem.h>
@@ -28,11 +29,17 @@ public:
     [[nodiscard]] const char* name() const override { return "Timer"; }
 };
 
+// Borrowed
+TimerSubsystem* g_timer;
+nme::Renderer*  g_renderer;
+nme::JobSystem* g_jobs;
+
 nme::Error engine_startup(nme::Kernel& kernel) {
-    kernel.add<TimerSubsystem>();
+    g_timer = kernel.add<TimerSubsystem>();
 
     // TODO: Add more subsystems
-    kernel.add<nme::Renderer>();
+    g_renderer = kernel.add<nme::Renderer>();
+    g_jobs     = kernel.add<nme::JobSystem>();
 
     return kernel.startup();
 }
