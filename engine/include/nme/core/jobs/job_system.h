@@ -5,6 +5,7 @@
 
 #include "nme/core/jobs/job.h"
 #include "nme/core/jobs/ws_deque.h"
+#include "nme/core/subsystem/subsystem.h"
 #include "nme/platform/thread/atomics.h"
 #include "nme/platform/thread/condition_variable.h"
 #include "nme/platform/thread/mutex.h"
@@ -13,7 +14,7 @@
 
 namespace nme {
 
-class JobSystem {
+class JobSystem final : public Subsystem {
 private:
     static constexpr usize kDequeCapacity = 8192;
     using Deque = WSDeque<Job, kDequeCapacity>;
@@ -40,7 +41,7 @@ public:
     };
 
     JobSystem() = default;
-    ~JobSystem();   // calls shutdown() if it's still running.
+    ~JobSystem() override;   // calls shutdown() if it's still running.
 
     JobSystem(const JobSystem& other)            = delete;
     JobSystem(JobSystem&& other)                 = delete;
@@ -48,11 +49,11 @@ public:
     JobSystem& operator=(JobSystem&& other)      = delete;
 
     // Spin up workers. Call once, from the main thread.
-    void startup(const Config& cfg);
-    void startup() { startup(Config{}); }   // defaults; Config is complete here
+    Error startup(const Config& cfg);
+    Error startup() override { return startup(Config{}); }   // defaults; Config is complete here
 
     // Stop accepting, wake all workers, join them. Destructor calls this by default.
-    void shutdown();
+    void shutdown() override;
 
     [[nodiscard]] u32 workerCount() const noexcept { return m_workerCount; }
 
@@ -121,6 +122,8 @@ public:
     // Block the CALLING thread until the counter hits zero.
     void waitForCounter(const JobCounter& counter) const;
 
+    [[nodiscard]] const char* name() const override { return "JobSystem"; }
+
 private:
     // Split [lo, hi): spawn the right half (via run(), so it's counted and lands
     // on this thread's deque), halve the left in place, run the leaf. Recursion
@@ -139,6 +142,7 @@ private:
     }
 
     void enqueue(const Job& job);              // push to the CALLING thread's own deque
+    void destroyDequeues() noexcept;
     bool getJob(u32 self, Job& out) const;    // false if no work available right now
     bool trySteal(u32 self, Job& out) const;  // one random-victim steal sweep
 

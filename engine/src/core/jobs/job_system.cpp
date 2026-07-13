@@ -38,8 +38,10 @@ JobSystem::~JobSystem() {
     shutdown();
 }
 
-void JobSystem::startup(const Config& cfg) {
-    NME_ASSERT(!m_running.load(MemoryOrder::Acquire));  // startup once
+Error JobSystem::startup(const Config& cfg) {
+    if (m_running.load(MemoryOrder::Acquire)) {
+        return Error::AlreadyInitialized;
+    }
 
     u32 count = cfg.workerCount;
     if (count == 0) {
@@ -50,9 +52,24 @@ void JobSystem::startup(const Config& cfg) {
     m_workerCount = count;
     m_dequeCount  = count + 1;
 
-    m_dequeues = static_cast<Deque*>(::operator new [](sizeof(Deque) * m_dequeCount));
+    // --- dequeues ---
+    m_dequeues = static_cast<Deque*>(
+        ::operator new[](sizeof(Deque) * m_dequeCount, std::nothrow));
+    if (!m_dequeues) {
+        m_workerCount = m_dequeCount = 0;
+        return Error::OutOfMemory;                  // nothing else acquired yet
+    }
     for (u32 i = 0; i < m_dequeCount; ++i) {
         ::new (&m_dequeues[i]) Deque();
+    }
+
+    // --- worker array (still before m_running: an OOM here can't use shutdown()) ---
+    m_workers = static_cast<Thread*>(
+        ::operator new[](sizeof(Thread) * count, std::nothrow));
+    if (!m_workers) {
+        destroyDequeues();
+        m_workerCount = 0;
+        return Error::OutOfMemory;
     }
 
     // the main thread owns the last deque; that's how run/runN from main knows
@@ -62,7 +79,7 @@ void JobSystem::startup(const Config& cfg) {
 
     m_running.store(true, MemoryOrder::Release);
 
-    m_workers = static_cast<Thread*>(::operator new[](sizeof(Thread) * count));
+    // --- spawn ---
     for (u32 i = 0; i < count; ++i) {
         char name[32];
         // small, dependency-free formatting: "<prefix>.<i>"
@@ -79,8 +96,17 @@ void JobSystem::startup(const Config& cfg) {
         tc.affinity  = static_cast<i32>(i);  // pin worker i to core i (visible in Tracy)
 
         ::new (&m_workers[i]) Thread([this, i]() { workerMain(i); }, tc);
+
+        if (!m_workers[i].joinable()) {
+            m_workerCount = i + 1;                  // slots [0, i] are constructed
+            shutdown();                             // joins the live ones, frees all
+            return Error::Unknown;
+        }
     }
+
+    return Error::None;
 }
+
 void JobSystem::shutdown() {
     if (!m_running.load(MemoryOrder::Acquire)) return;
 
@@ -122,6 +148,18 @@ void JobSystem::enqueue(const Job& job) {
     if (m_sleepers.load(MemoryOrder::Acquire) != 0) {
         wakeOne();
     }
+}
+
+void JobSystem::destroyDequeues() noexcept {
+    if (!m_dequeues) return;
+    for (u32 d = 0; d < m_dequeCount; ++d) {
+        Job j;
+        while (m_dequeues[d].pop(j)) delete j.closure;
+        m_dequeues[d].~Deque();
+    }
+    ::operator delete[](m_dequeues);
+    m_dequeues = nullptr;
+    m_dequeCount = 0;
 }
 
 bool JobSystem::trySteal(const u32 self, Job& out) const {
