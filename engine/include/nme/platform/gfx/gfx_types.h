@@ -22,6 +22,7 @@ using Texture     = Handle<struct TextureTag>;      // also serves as a render t
 using Shader      = Handle<struct ShaderTag>;
 using Pipeline    = Handle<struct PipelineTag>;
 
+using NativeHandle = void*;     // HWND / NSWindow* / ANativeWindow*, backend-specific
 
 }  // nme::gfx
 
