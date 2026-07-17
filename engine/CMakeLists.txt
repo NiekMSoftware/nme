@@ -26,6 +26,7 @@ set(NME_PLATFORM_HEADERS
         # Graphics
         include/nme/platform/gfx/clip_space.h
         include/nme/platform/gfx/gfx_types.h
+        include/nme/platform/gfx/gfx.h
 
         # Threading
         include/nme/platform/thread/atomics.h
