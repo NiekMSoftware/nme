@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nme/platform/graphics/clip_space.h"
+#include "nme/platform/gfx/clip_space.h"
 
 namespace nme::math {
 

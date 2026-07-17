@@ -1,9 +1,9 @@
 #pragma once
 
-#include "nme/platform/graphics/clip_space.h"
 #include "details/matrix_base.hpp"
 #include "details/matrix_constants.hpp"
 #include "details/matrix_traits.hpp"
+#include "nme/platform/gfx/clip_space.h"
 
 namespace nme::math {
 
