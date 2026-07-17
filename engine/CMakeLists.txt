@@ -11,58 +11,59 @@ file(GLOB_RECURSE NME_HEADERS CONFIGURE_DEPENDS
 
 # --- Platform ---
 set(NME_PLATFORM_SOURCES
-    # Timer
-    src/platform/timer/timer.cpp
+        # Timer
+        src/platform/timer/timer.cpp
 )
 set(NME_PLATFORM_HEADERS
-    include/nme/platform/cache.h
-    include/nme/platform/platform.h
-    include/nme/platform/types.h
+        include/nme/platform/cache.h
+        include/nme/platform/platform.h
+        include/nme/platform/types.h
 
-    # Debug
-    include/nme/platform/debug/assert.h
-    include/nme/platform/debug/debug_break.h
+        # Debug
+        include/nme/platform/debug/assert.h
+        include/nme/platform/debug/debug_break.h
 
-    # Graphics
-    include/nme/platform/graphics/clip_space.h
+        # Graphics
+        include/nme/platform/gfx/clip_space.h
+        include/nme/platform/gfx/gfx_types.h
 
-    # Threading
-    include/nme/platform/thread/atomics.h
-    include/nme/platform/thread/condition_variable.h
-    include/nme/platform/thread/mutex.h
-    include/nme/platform/thread/thread.h
-    include/nme/platform/thread/spsc_ring.h
+        # Threading
+        include/nme/platform/thread/atomics.h
+        include/nme/platform/thread/condition_variable.h
+        include/nme/platform/thread/mutex.h
+        include/nme/platform/thread/thread.h
+        include/nme/platform/thread/spsc_ring.h
 
-    # Timer
-    include/nme/platform/timer/timer.h
+        # Timer
+        include/nme/platform/timer/timer.h
 )
 
 # --- Core ---
 set(NME_CORE_SOURCES
-    src/core/assert.cpp
-    src/core/jobs/job_system.cpp
-    src/core/result/error.cpp
-    src/core/subsystem/kernel.cpp
+        src/core/assert.cpp
+        src/core/jobs/job_system.cpp
+        src/core/result/error.cpp
+        src/core/subsystem/kernel.cpp
 )
 set(NME_CORE_HEADERS
-    include/nme/core/assert/assert.h
+        include/nme/core/assert/assert.h
 
-    include/nme/core/debug/log.h
-    include/nme/core/debug/profiler.h
-    include/nme/core/debug/scoped_timer.h
+        include/nme/core/debug/log.h
+        include/nme/core/debug/profiler.h
+        include/nme/core/debug/scoped_timer.h
 
-    include/nme/core/jobs/job.h
-    include/nme/core/jobs/job_system.h
-    include/nme/core/jobs/ws_deque.h
+        include/nme/core/jobs/job.h
+        include/nme/core/jobs/job_system.h
+        include/nme/core/jobs/ws_deque.h
 
-    include/nme/core/math/matrix.hpp
-    include/nme/core/math/vec.hpp
+        include/nme/core/math/matrix.hpp
+        include/nme/core/math/vec.hpp
 
-    include/nme/core/result/error.h
-    include/nme/core/result/result.h
+        include/nme/core/result/error.h
+        include/nme/core/result/result.h
 
-    include/nme/core/util/scope_guard.h
-    include/nme/core/util/unique_handle.h
+        include/nme/core/util/scope_guard.h
+        include/nme/core/util/unique_handle.h
 )
 
 # --- Renderer ---
