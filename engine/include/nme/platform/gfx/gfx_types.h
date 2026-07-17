@@ -53,9 +53,9 @@ enum class StoreOp           : u8 { Store, DontCare };
 enum class MemoryAccess      : u8 { GpuOnly, CpuToGpu, GpuToCpu };
 
 #define NME_GFX_FLAGS(E) \
-    (constexpr E  operator|(E a, E b) noexcept { return static_cast<E>(u32(a) | u32(b)); } \
-    constexpr E  operator&(E a, E b) noexcept { return static_cast<E>(u32(a) & u32(b)); }  \
-    constexpr E& operator|=(E& a, E b) noexcept { return a = a | b; }                      \
+    (constexpr E operator|(E a, E b)   noexcept { return static_cast<E>(u32(a) | u32(b)); } \
+    constexpr E  operator&(E a, E b)   noexcept { return static_cast<E>(u32(a) & u32(b)); } \
+    constexpr E& operator|=(E& a, E b) noexcept { return a = a | b; }                       \
     constexpr bool any(E a) noexcept { return u32(a) != 0; })
 
 enum class BufferUsage : u32 {
