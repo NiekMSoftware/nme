@@ -79,6 +79,23 @@ enum class TextureUsage : u32 {
 };
 NME_GFX_FLAGS(TextureUsage)
 
+struct Extend2D { u32 width, height; };
+struct Rect2D   { i32 x, y; u32 width, height; };
+struct Color    { float r, g, b, a; };
+struct Viewport { float x, y, width, height, min_depth, max_depth; };
+
+enum class EventType : u8 { None, Close, Resize, KeyDown, KeyUp, MouseMove, MouseButton, Focus };
+
+struct Event {
+    EventType type;
+    union {
+        Extend2D                        resize;
+        struct { i32 x, y; }            mouse;
+        struct { u32 code; bool down; } key;
+        struct { bool gained; }         focus;
+    };
+};
+
 }  // nme::gfx
 
 #endif  // NME_PLATFORM_GFX_TYPES_H_
