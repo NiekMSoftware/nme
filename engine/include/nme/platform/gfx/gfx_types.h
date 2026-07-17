@@ -96,10 +96,76 @@ struct Event {
     };
 };
 
+// --- Descriptors ---
+
 struct WindowDesc {
     const char* title;
     Extent2D    extent;
     bool        resizable;
+};
+
+struct DeviceDesc {
+    Backend backend;    // auto = platform default
+    bool    debug;      // debug layers; off in ship builds
+};
+
+struct SwapchainDesc {
+    Extent2D    extent;
+    Format      format;
+    PresentMode present_mode;
+    u32         image_count;    // 2 = double, 3 = triple buffer
+};
+
+struct BufferDesc {
+    u64          size;
+    BufferUsage  usage;
+    MemoryAccess access;
+    const char*  debug_name;
+};
+
+struct TextureDesc {
+    Extent2D     extent;
+    Format       format;
+    TextureUsage usage;
+    u32          mip_levels;
+    const char*  debug_name;
+};
+
+struct ShaderDesc {
+    ShaderStage stage;
+    const void* bytecode;       // SPIR-V / DXIL / metallib, etc.
+    usize       size;
+    const char* entry;
+};
+
+struct PipelineDesc {
+    Shader            vertex_shader;
+    Shader            fragment_shader;
+    PrimitiveTopology topology;
+    Format            color_format;
+    Format            depth_format;
+    const char*       debug_name;
+};
+
+// --- Render Pass ---
+
+struct ColorAttachment {
+    Texture target;
+    LoadOp  load;
+    StoreOp store;
+    Color   clear;
+};
+
+struct DepthAttachment {
+    Texture target;
+    LoadOp  load;
+    StoreOp store;
+    float   clear_depth;
+};
+
+struct RenderPassDesc {
+    ColorAttachment color;
+    DepthAttachment depth;
 };
 
 }  // nme::gfx
