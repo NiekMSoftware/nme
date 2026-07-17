@@ -58,6 +58,27 @@ enum class MemoryAccess      : u8 { GpuOnly, CpuToGpu, GpuToCpu };
     constexpr E& operator|=(E& a, E b) noexcept { return a = a | b; }                     \
     constexpr bool any(E a) noexcept { return u32(a) != 0; }
 
+enum class BufferUsage : u32 {
+    None = 0,
+    Vertex = 1 << 0,
+    Index  = 1 << 1,
+    Uniform = 1 << 2,
+    Storage = 1 << 3,
+    CopySrc = 1 << 4,
+    CopyDst = 1 << 5,
+};
+NME_GFX_FLAGS(BufferUsage);
+
+enum class TextureUsage : u32 {
+    None        = 0,
+    Sampled     = 1 << 0,
+    ColorTarget = 1 << 1,
+    DepthTarget = 1 << 2,
+    CopySrc     = 1 << 3,
+    CopyDst     = 1 << 4,
+};
+NME_GFX_FLAGS(TextureUsage)
+
 }  // nme::gfx
 
 #endif  // NME_PLATFORM_GFX_TYPES_H_
