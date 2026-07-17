@@ -24,6 +24,34 @@ using Pipeline    = Handle<struct PipelineTag>;
 
 using NativeHandle = void*;     // HWND / NSWindow* / ANativeWindow*, backend-specific
 
+enum class GfxError : u8 {
+    None = 0,
+    Unknown,
+    OutOfMemory,
+    InvalidArgs,
+    BackendUnavailable,
+    DeviceLost,
+    SurfaceLost,
+    SwapchainOutOfDate
+};
+
+enum class Backend : u8 { Auto, Vulkan, D3D12, D3D11, Metal, OpenGL, OpenGLES, Null };
+
+enum class Format : u8 {
+    Undefined,
+    RGBA8Unorm, RGBA8Srgb, BGRA8Unorm, BGRA8Srgb,   // desktop back-buffer formats
+    RGBA16F,                                        // HDR targets
+    R32F, D32F, D24UnormS8                          // depth / depth-stencil
+};
+
+enum class PrimitiveTopology : u8 { TriangleList, TriangleStrip, LineList, PointList };
+enum class IndexType         : u8 { U16, U32 };
+enum class ShaderStage       : u8 { Vertex, Fragment, Compute };
+enum class PresentMode       : u8 { Fifo, Mailbox, Immediate };     // vsync / triple / off
+enum class LoadOp            : u8 { Load, Clear, DontCare };
+enum class StoreOp           : u8 { Store, DontCare };
+enum class MemoryAccess      : u8 { GpuOnly, CpuToGpu, GpuToCpu };
+
 }  // nme::gfx
 
 #endif  // NME_PLATFORM_GFX_TYPES_H_
