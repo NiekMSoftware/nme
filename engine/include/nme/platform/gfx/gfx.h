@@ -1,11 +1,5 @@
-#pragma once
-//==============================================================================
-// Core -- Graphics wrappers
-//   Gregory sec. 1.5 -- Graphics Wrappers
-//------------------------------------------------------------------------------
-// Responsibility documented; implementation added in the chapter/volume noted.
-// TODO: thin cross-API graphics primitives for higher layers.
-//==============================================================================
+#ifndef NME_PLATFORM_GFX_GFX_H_
+#define NME_PLATFORM_GFX_GFX_H_
 
 #include "nme/platform/gfx/gfx_types.h"
 
@@ -98,3 +92,5 @@ void cmd_draw(CommandList cl, u32 vertex_count, u32 first_vertex = 0);
 void cmd_draw_indexed(CommandList cl, u32 index_count, u32 first_index = 0, i32 vertex_offset = 0);
 
 }  // namespace nme::gfx
+
+#endif  // NME_PLATFORM_GFX_GFX_H_
