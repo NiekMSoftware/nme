@@ -13,7 +13,7 @@ vk::VulkanDevice* g_vk = nullptr;   // the one active device
 
 // Pick the first physical device exposing a graphics-capable queue family.
 // TODO: score devices (discrete > integrated) and require present support.
-bool pick_physical(const VkInstance instance, VkPhysicalDevice* out_phys, u32* out_family) {
+bool pick_physical(VkInstance instance, VkPhysicalDevice* out_phys, u32* out_family) {
     u32 count = 0;
     vkEnumeratePhysicalDevices(instance, &count, nullptr);
     if (count == 0) return false;
@@ -21,7 +21,7 @@ bool pick_physical(const VkInstance instance, VkPhysicalDevice* out_phys, u32* o
     std::vector<VkPhysicalDevice> devices(count);
     vkEnumeratePhysicalDevices(instance, &count, devices.data());
 
-    for (const VkPhysicalDevice phys : devices) {
+    for (VkPhysicalDevice phys : devices) {
         u32 qcount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(phys, &qcount, nullptr);
         std::vector<VkQueueFamilyProperties> qprops(qcount);
