@@ -15,8 +15,8 @@ typedef usize StackMarker;
 
 // --- stack allocator ---
 
-inline void stack_alloc_init(StackAllocator* a, void* backing, const usize bytes) {
-    a->pBase = static_cast<u8*>(backing);
+inline void stack_alloc_init(StackAllocator* a, void* pBacking, const usize bytes) {
+    a->pBase = static_cast<u8*>(pBacking);
     a->m_capacity = bytes;
     a->m_top = 0;
 }
@@ -39,8 +39,8 @@ inline void stack_alloc_clear(StackAllocator* a) { a->m_top = 0; }
 
 // --- interface adapter ---
 
-inline void* stack_alloc_vtbl(void* self, const usize bytes, const usize align) {
-    return stack_alloc(static_cast<StackAllocator*>(self), bytes, align);
+inline void* stack_alloc_vtbl(void* pSelf, const usize bytes, const usize align) {
+    return stack_alloc(static_cast<StackAllocator*>(pSelf), bytes, align);
 }
 inline void stack_alloc_free_vtbl(void* /*self*/, void* /*p*/, usize /*bytes*/) {}
 inline Allocator stack_as_allocator(StackAllocator* a) {
