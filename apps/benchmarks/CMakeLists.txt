@@ -21,3 +21,7 @@ nme_add_benchmark(jobs
 nme_add_benchmark(math
         SOURCES math_bench/math_bench.cpp
         DEPS    glm::glm)
+
+nme_add_benchmark(allocator
+        SOURCES allocator_bench/alloc_bench.cpp
+)
