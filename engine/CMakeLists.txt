@@ -49,6 +49,8 @@ set(NME_CORE_SOURCES
 set(NME_CORE_HEADERS
         include/nme/core/assert/assert.h
 
+        include/nme/core/memory/stack_alloc.h
+
         include/nme/core/debug/log.h
         include/nme/core/debug/profiler.h
         include/nme/core/debug/scoped_timer.h
