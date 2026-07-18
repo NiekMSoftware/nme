@@ -90,4 +90,23 @@ bool validation_available() {
 
 }  // anonymous namespace
 
+namespace vk {
+
+VulkanDevice* device_from(Device) noexcept { return g_vk; }
+
+GfxError to_error(const VkResult r) noexcept {
+    switch (r) {
+        case VK_SUCCESS: return GfxError::None;
+        case VK_ERROR_OUT_OF_HOST_MEMORY:
+        case VK_ERROR_OUT_OF_DEVICE_MEMORY:   return GfxError::OutOfMemory;
+        case VK_ERROR_DEVICE_LOST:            return GfxError::DeviceLost;
+        case VK_ERROR_SURFACE_LOST_KHR:       return GfxError::SurfaceLost;
+        case VK_ERROR_OUT_OF_DATE_KHR:        return GfxError::SwapchainOutOfDate;
+        case VK_ERROR_INITIALIZATION_FAILED:  return GfxError::BackendUnavailable;
+        default:                              return GfxError::Unknown;
+    }
+}
+
+}  // namespace vk
+
 }  // namespace nme::gfx
