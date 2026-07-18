@@ -34,6 +34,9 @@ endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+set(NME_GFX_BACKEND "Vulkan" CACHE STRING "Graphics backend: Vulkan | Null")
+set_property(CACHE NME_GFX_BACKEND PROPERTY STRINGS Vulkan Null)
+
 # --- Language ---
 set(CMAKE_CXX_STANDARD ${NME_CXX_VERSION})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -88,4 +91,5 @@ message(STATUS "  Sanitizers         : ${NME_ENABLE_SANITIZERS}")
 message(STATUS "  Tracy profiler     : ${NME_ENABLE_TRACY}")
 message(STATUS "  Build tests        : ${NME_BUILD_TESTS}")
 message(STATUS "  Build benchmarks   : ${NME_BUILD_BENCHMARKS}")
+message(STATUS "  Graphics backend   : ${NME_GFX_BACKEND}")
 message(STATUS "")

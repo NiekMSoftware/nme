@@ -11,3 +11,9 @@
 #   target_link_libraries(nme_engine PUBLIC Vulkan::Vulkan)
 
 # (Nothing to build yet - subfolders are placeholders.)
+
+if (NME_GFX_BACKEND STREQUAL "Vulkan")
+    find_package(Vulkan REQUIRED)
+    target_link_libraries(nme_engine PRIVATE Vulkan::Vulkan)   # PRIVATE: Vk never leaks past the seam
+    message(STATUS "  Vulkan             : ${Vulkan_VERSION}")
+endif()

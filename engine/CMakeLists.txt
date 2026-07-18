@@ -116,6 +116,16 @@ if (WIN32)
 #    )
 endif()
 
+if (NME_GFX_BACKEND STREQUAL "Vulkan")
+    target_sources(nme_engine PRIVATE
+            src/platform/gfx/backend/vulkan/vk_backend.cpp
+            src/platform/gfx/backend/vulkan/vk_swapchain.cpp
+    )
+    target_compile_definitions(nme_engine PUBLIC NME_GFX_VULKAN=1)
+else()
+    message(FATAL_ERROR "NME_GFX_BACKEND must be Vulkan or Null (got '${NME_GFX_BACKEND}')")
+endif()
+
 # Nest the headers by folder in IDE project trees instead of one flat list.
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/include/nme"
     PREFIX "Header Files" FILES ${NME_HEADERS})
