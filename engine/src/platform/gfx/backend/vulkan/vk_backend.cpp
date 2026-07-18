@@ -1,5 +1,4 @@
 #include <cstring>  // std::strcmp
-#include <map>
 #include <vector>  // TODO: swap for dynamic arr container once that's set
 
 #include "nme/platform/gfx/gfx.h"
