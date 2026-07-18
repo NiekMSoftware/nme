@@ -1,5 +1,5 @@
-#ifndef NME_VK_COMMON_H_
-#define NME_VK_COMMON_H_
+#ifndef NME_GFX_VK_COMMON_H_
+#define NME_GFX_VK_COMMON_H_
 
 #include <vulkan/vulkan.h>
 
@@ -27,4 +27,4 @@ GfxError vk_error(VkResult r) noexcept;
 
 }  // namespace nme::gfx::vk
 
-#endif  // NME_VK_COMMON_H_
+#endif  // NME_GFX_VK_COMMON_H_
