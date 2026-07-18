@@ -1,8 +1,3 @@
-
-//
-// Created by niek on 7/18/2026.
-//
-
 #ifndef NME_STACK_ALLOC_H_
 #define NME_STACK_ALLOC_H_
 
@@ -17,6 +12,8 @@ struct StackAllocator {
     usize m_top;        // bytes in use == offset of next free bytes
 };
 typedef usize StackMarker;
+
+// --- stack allocator ---
 
 inline void stack_alloc_init(StackAllocator* a, void* backing, const usize bytes) {
     a->pBase = static_cast<u8*>(backing);
@@ -39,6 +36,20 @@ inline void stack_alloc_free_to_marker(StackAllocator* a, const StackMarker m) {
     a->m_top = m;
 }
 inline void stack_alloc_clear(StackAllocator* a) { a->m_top = 0; }
+
+// --- interface adapter ---
+
+inline void* stack_alloc_shim(void* self, const usize bytes, const usize align) {
+    return stack_alloc(static_cast<StackAllocator*>(self), bytes, align);
+}
+inline void stack_alloc_free_shim(void* /*self*/, void* /*p*/, usize /*bytes*/) {}
+inline Allocator stack_as_allocator(StackAllocator* a) {
+    Allocator out{};
+    out.alloc = stack_alloc_shim;
+    out.free  = stack_alloc_free_shim;
+    out.self  = a;
+    return out;
+}
 
 }  // namespace nme
 
