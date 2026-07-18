@@ -34,6 +34,10 @@ inline void* stack_alloc(StackAllocator* a, const usize bytes, const usize align
 }
 
 inline StackMarker stack_alloc_get_marker(const StackAllocator* a) { return a->m_top; }
+inline void stack_alloc_free_to_marker(StackAllocator* a, const StackMarker m) {
+    NME_ASSERT(m <= a->m_top);
+    a->m_top = m;
+}
 
 }  // namespace nme
 
