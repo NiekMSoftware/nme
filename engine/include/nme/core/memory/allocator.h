@@ -11,7 +11,7 @@ namespace nme {
 
 struct Allocator {
     void* (*alloc)(void* self, usize bytes, usize align);
-    void* (*free) (void* self, void* p, usize bytes);
+    void  (*free)(void*, void*, usize);
 
     void* self;
 };
