@@ -38,6 +38,7 @@ inline void stack_alloc_free_to_marker(StackAllocator* a, const StackMarker m) {
     NME_ASSERT(m <= a->m_top);
     a->m_top = m;
 }
+inline void stack_alloc_clear(StackAllocator* a) { a->m_top = 0; }
 
 }  // namespace nme
 
