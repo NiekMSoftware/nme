@@ -39,14 +39,14 @@ inline void stack_alloc_clear(StackAllocator* a) { a->m_top = 0; }
 
 // --- interface adapter ---
 
-inline void* stack_alloc_shim(void* self, const usize bytes, const usize align) {
+inline void* stack_alloc_vtbl(void* self, const usize bytes, const usize align) {
     return stack_alloc(static_cast<StackAllocator*>(self), bytes, align);
 }
-inline void stack_alloc_free_shim(void* /*self*/, void* /*p*/, usize /*bytes*/) {}
+inline void stack_alloc_free_vtbl(void* /*self*/, void* /*p*/, usize /*bytes*/) {}
 inline Allocator stack_as_allocator(StackAllocator* a) {
     Allocator out{};
-    out.alloc = stack_alloc_shim;
-    out.free  = stack_alloc_free_shim;
+    out.alloc = stack_alloc_vtbl;
+    out.free  = stack_alloc_free_vtbl;
     out.self  = a;
     return out;
 }
