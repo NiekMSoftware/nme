@@ -51,6 +51,7 @@ set(NME_CORE_HEADERS
 
         include/nme/core/memory/align.h
         include/nme/core/memory/allocator.h
+        include/nme/core/memory/pool_alloc.h
         include/nme/core/memory/stack_alloc.h
 
         include/nme/core/debug/log.h
