@@ -108,4 +108,95 @@ GfxError to_error(const VkResult r) noexcept {
 
 }  // namespace vk
 
+Device create_device(const DeviceDesc* desc, GfxError* out_err) {
+    const auto fail = [&](const GfxError e) { if (out_err) *out_err = e; return Device{0}; };
+
+    auto* vd = new vk::VulkanDevice{};
+    vd->validation = desc && desc->debug && validation_available();
+
+    // --- instance ---
+    VkApplicationInfo app { VK_STRUCTURE_TYPE_APPLICATION_INFO };
+    app.pApplicationName = "NME";
+    app.apiVersion       = VK_API_VERSION_1_2;
+
+    const char* extensions[4];
+    u32 ext_count = 0;
+    extensions[ext_count++] = "VK_KHR_surface";
+#if defined(_WIN32)
+    extensions[ext_count++] = "VK_KHR_win32_surface";
+#elif defined (__APPLE__)
+    extensions[ext_count++] = "VK_MVK_metal_surface";
+#elif defined (__linux__)
+    extensions[ext_count++] = "VK_KHR_xcb_surface";
+#endif
+    if (vd->validation) extensions[ext_count++] = "VK_EXT_debug_utils";
+
+    VkInstanceCreateInfo ici { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
+    ici.pApplicationInfo = &app;
+    ici.enabledExtensionCount = ext_count;
+    ici.ppEnabledExtensionNames = extensions;
+    if (vd->validation) {
+        ici.enabledLayerCount = 1;
+        ici.ppEnabledLayerNames = &kValidationLayer;
+    }
+
+    if (const VkResult r = vkCreateInstance(&ici, nullptr, &vd->instance); r != VK_SUCCESS) {
+        delete vd;
+        return fail(vk::to_error(r));
+    }
+
+    // TODO: if vd->validation, create a VkDebugUtilsMessengerEXT here so layer
+    //       messages route through nme's logger.
+
+    // --- physical device ---
+    if (!pick_physical(vd->instance, &vd->physical, &vd->graphics_family)) {
+        vkDestroyInstance(vd->instance, nullptr);
+        delete vd;
+        return fail(GfxError::BackendUnavailable);
+    }
+
+    // --- logical device + graphics queue ---
+    constexpr f32 priority = 1.0f;
+    VkDeviceQueueCreateInfo qci { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
+    qci.queueFamilyIndex = vd->graphics_family;
+    qci.queueCount       = 1;
+    qci.pQueuePriorities = &priority;
+
+    const char* dev_ext[] = { "VK_KHR_swapchain" };
+    VkDeviceCreateInfo dci { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
+    dci.queueCreateInfoCount    = 1;
+    dci.pQueueCreateInfos       = &qci;
+    dci.enabledExtensionCount   = 1;
+    dci.ppEnabledExtensionNames = dev_ext;
+
+    if (const VkResult r = vkCreateDevice(vd->physical, &dci, nullptr, &vd->device); r != VK_SUCCESS) {
+        vkDestroyInstance(vd->instance, nullptr);
+        delete vd;
+        return fail(vk::to_error(r));
+    }
+    vkGetDeviceQueue(vd->device, vd->graphics_family, 0, &vd->graphics_queue);
+
+    g_vk = vd;
+    if (out_err) *out_err = GfxError::None;
+    return Device{1};
+}
+
+void destroy_device(Device d) {
+    if (!g_vk) return;
+    if (g_vk->device)   vkDestroyDevice(g_vk->device, nullptr);
+
+    // TODO: destroy debug messenger before the instance.
+
+    if (g_vk->instance) vkDestroyInstance(g_vk->instance, nullptr);
+    delete g_vk;
+    g_vk = nullptr;
+}
+
+Backend device_backend(Device) { return Backend::Vulkan; }
+
+void device_wait_idle(Device) {
+    if (g_vk && g_vk->device)
+        vkDeviceWaitIdle(g_vk->device);
+}
+
 }  // namespace nme::gfx
