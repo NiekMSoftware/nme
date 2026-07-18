@@ -100,6 +100,7 @@ target_sources(nme_engine
 if (WIN32)
     target_sources(nme_engine
         PRIVATE
+            src/platform/gfx/surface/win32_surface.cpp
             src/platform/thread/win32/condition_variable.cpp
             src/platform/thread/win32/mutex.cpp
             src/platform/thread/win32/thread.cpp
