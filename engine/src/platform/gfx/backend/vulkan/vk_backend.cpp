@@ -181,7 +181,7 @@ Device create_device(const DeviceDesc* desc, GfxError* out_err) {
     return Device{1};
 }
 
-void destroy_device(Device d) {
+void destroy_device(Device) {
     if (!g_vk) return;
     if (g_vk->device)   vkDestroyDevice(g_vk->device, nullptr);
 
@@ -198,5 +198,44 @@ void device_wait_idle(Device) {
     if (g_vk && g_vk->device)
         vkDeviceWaitIdle(g_vk->device);
 }
+
+// --- resources ---
+// TODO: Each needs a VKBuffer/VkImage/VkShaderModule/VkPipeline created here and an
+// id -> object pool entry so the handle can resolve back. Stubbed for now.
+
+Buffer   create_buffer(Device, const BufferDesc*, GfxError* e)     { if (e) *e = GfxError::Unknown; return {}; }
+Texture  create_texture(Device, const TextureDesc*, GfxError* e)   { if (e) *e = GfxError::Unknown; return {}; }
+Shader   create_shader(Device, const ShaderDesc*, GfxError* e)     { if (e) *e = GfxError::Unknown; return {}; }
+Pipeline create_pipeline(Device, const PipelineDesc*, GfxError* e) { if (e) *e = GfxError::Unknown; return {}; }
+
+void destroy_buffer(Device, Buffer)     {}   // TODO
+void destroy_texture(Device, Texture)   {}   // TODO
+void destroy_shader(Device, Shader)     {}   // TODO
+void destroy_pipeline(Device, Pipeline) {}   // TODO
+
+GfxError write_buffer(Device, Buffer, const void*, u64, u64) { return GfxError::Unknown; }  // TODO
+
+// --- frame + commands ---
+// TODO: Needs a VkCommandPool + per-frame VkCommandBuffers, and frame-in-flight
+// fences. cmd_* record into the active VkCommandBuffer.
+
+void        begin_frame(Device) {}                        // TODO
+CommandList acquire_command_list(Device) { return {}; }   // TODO
+void        submit(Device, CommandList) {}                // TODO: vkQueueSubmit
+void        end_frame(Device) {}                          // TODO
+
+void cmd_begin(CommandList) {}                                          // TODO: vkBeginCommandBuffer
+void cmd_end(CommandList) {}                                            // TODO: vkEndCommandBuffer
+void cmd_begin_render_pass(CommandList, const RenderPassDesc*) {}       // TODO: vkCmdBeginRendering
+void cmd_end_render_pass(CommandList) {}                                // TODO: vkCmdEndRendering
+void cmd_set_viewport(CommandList, const Viewport*) {}                  // TODO: vkCmdSetViewport
+void cmd_set_scissor(CommandList, const Rect2D*) {}                     // TODO: vkCmdSetScissor
+void cmd_bind_pipeline(CommandList, Pipeline) {}                        // TODO: vkCmdBindPipeline
+void cmd_push_constants(CommandList, const void*, u32) {}               // TODO: vkCmdPushConstants
+void cmd_bind_texture(CommandList, u32, Texture) {}                     // TODO: descriptor set bind
+void cmd_bind_vertex_buffer(CommandList, u32, Buffer, u64) {}           // TODO: vkCmdBindVertexBuffers
+void cmd_bind_index_buffer(CommandList, Buffer, IndexType, u64) {}      // TODO: vkCmdBindIndexBuffer
+void cmd_draw(CommandList, u32, u32) {}                                 // TODO: vkCmdDraw
+void cmd_draw_indexed(CommandList, u32, u32, i32) {}                    // TODO: vkCmdDrawIndexed
 
 }  // namespace nme::gfx
