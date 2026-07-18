@@ -63,6 +63,9 @@ set(NME_CORE_HEADERS
         include/nme/core/result/error.h
         include/nme/core/result/result.h
 
+        include/nme/core/subsystem/subsystem.h
+        include/nme/core/subsystem/kernel.h
+
         include/nme/core/util/scope_guard.h
         include/nme/core/util/unique_handle.h
 )
