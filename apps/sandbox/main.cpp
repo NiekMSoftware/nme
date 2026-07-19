@@ -1,5 +1,6 @@
 #include <nme/core/jobs/job_system.h>
 #include <nme/core/result/result.h>
+#include <nme/core/string/string_id.h>
 #include <nme/core/subsystem/kernel.h>
 #include <nme/core/subsystem/subsystem.h>
 #include <nme/core/util/scope_guard.h>
@@ -46,6 +47,22 @@ nme::Error engine_startup(nme::Kernel& kernel) {
 
 void engine_run() {
     std::puts("entering main loop");
+
+    const nme::StringId kStages[] = {
+        NME_SID("input.poll"),
+        NME_SID("world.update"),
+        NME_SID("renderer.submit"),
+    };
+    for (const nme::StringId stage : kStages) {
+#if NME_DEBUG
+        std::printf("    stage %016llx   (%s)\n",   // TEMP: proves debug recovery
+            static_cast<unsigned long long>(stage.value),
+            nme::sid_to_str(stage));
+#else
+        std::printf("    stage %016llx\n",          // release: only the hash exists
+            static_cast<unsigned long long>(stage.value));
+#endif
+    }
 
     using nme::platform::Timer;
     const Timer &clock = nme::platform::global_timer();
