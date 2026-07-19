@@ -1,11 +1,16 @@
 #ifndef NME_COLLECTIONS_FIXED_ARRAY_H_
 #define NME_COLLECTIONS_FIXED_ARRAY_H_
 
+#include <new>  // placement new
+
 #include "nme/platform/debug/assert.h"
 #include "nme/platform/types.h"
 
 namespace nme {
 
+// Inline fixed-capacity array with in-struct storage.
+// No allocation or allocator; capacity N is compile-time fixed.
+// Trivially relocatable as raw storage plus size.
 template<typename T, usize N>
 struct FixedArray {
     alignas(T) u8 m_storage[sizeof(T) * N];
@@ -53,6 +58,47 @@ template<typename T, usize N>
 constexpr bool fixed_array_empty(const FixedArray<T, N>* a)   { return a->m_size == 0; }
 template<typename T, usize N>
 constexpr bool fixed_array_full(const FixedArray<T, N>* a)    { return a->m_size == N; }
+
+// --- mutation ---
+
+// Construct a copy at the end, returns the new slot or nullptr if full.
+template<typename T, usize N>
+inline T* fixed_array_push(FixedArray<T, N>* a, const T& value) {
+    if (a->m_size == N) return nullptr;
+    T* slot = fixed_array_data(a) + a->m_size;
+    ::new (static_cast<void*>(slot)) T(value);
+    ++a->m_size;
+    return slot;
+}
+
+// Destroy the last element.
+template<typename T, usize N>
+inline void fixed_array_pop(FixedArray<T, N>* a) {
+    NME_PLATFORM_ASSERT(a->m_size > 0);
+    --a->m_size;
+    fixed_array_data(a)[a->m_size].~T();
+}
+
+// O(1) unordered erase, overwrite the hole with the last element, then pop.
+template<typename T, usize N>
+inline void fixed_array_erase_swap(FixedArray<T, N>* a, const usize i) {
+    NME_PLATFORM_ASSERT(i < a->m_size);
+    T* data = fixed_array_data(a);
+    const usize last = a->m_size - 1;
+    if (i != last) {
+        data[i] = static_cast<T&&>(data[last]);     // move-assign (copy fallback)
+    }
+    data[last].~T();
+    a->m_size = last;
+}
+
+// Destroy all elements, capacity is unchanged
+template<typename T, usize N>
+inline void fixed_array_clear(FixedArray<T, N>* a) {
+    T* data = fixed_array_data(a);
+    for (usize i = 0; i < a->m_size; ++i) data[i].~T();
+    a->m_size = 0;
+}
 
 }  // namespace nme
 
