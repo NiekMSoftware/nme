@@ -44,6 +44,7 @@ set(NME_CORE_SOURCES
         src/core/assert.cpp
         src/core/jobs/job_system.cpp
         src/core/result/error.cpp
+        src/core/string_id.cpp
         src/core/subsystem/kernel.cpp
 )
 set(NME_CORE_HEADERS
