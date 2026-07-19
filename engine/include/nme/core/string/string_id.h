@@ -36,11 +36,11 @@ struct StringId {
 constexpr bool operator==(const StringId a, const StringId b) noexcept { return a.value == b.value; }
 constexpr bool operator!=(const StringId a, const StringId b) noexcept { return a.value != b.value; }
 
+constexpr StringId make_sid(const char* str) noexcept { return StringId{fnv1a_64(str)}; }
+
 // Compile time construction: StringId id = "player.health"_sid;
 // Usable as a 'case' label because it is a converted constant expression.
-constexpr StringId operator""_sid(const char* str, usize /*len*/) noexcept {
-    return StringId{fnv1a_64(str)};
-}
+constexpr StringId operator""_sid(const char* str, usize /*len*/) noexcept { return make_sid(str); }
 
 #if NME_DEBUG
 
@@ -54,11 +54,11 @@ const char* sid_to_str(StringId id);
 StringId register_sid(StringId id, const char* str);
 
 // Compile-time id AND (in debug) registers its text for reverse lookup.
-#define NME_SID(str) ::nme::register_sid((str##_sid), (str))
+#define NME_SID(str) ::nme::register_sid(::nme::make_sid(str), (str))
 
 #else   // retail: no strings, no table
 
-#define NME_SID(str) (str##_sid)
+#define NME_SID(str) (::nme::make_sid(str))
 
 #endif
 
