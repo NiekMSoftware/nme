@@ -1,7 +1,6 @@
 {
-  "version": 3,
+  "version": 6,
   "configurePresets": [
-
     {
       "name": "base",
       "hidden": true,
@@ -78,6 +77,49 @@
       "description": "Build all projects with Clang",
       "inherits": "base-clang",
       "binaryDir": "${sourceDir}/build/clang"
+    },
+
+    {
+      "name": "ship-base",
+      "hidden": true,
+      "description": "Dev-only targets off; own build tree so a ship run never touches a dev cache",
+      "cacheVariables": {
+        "NME_BUILD_TESTS": "OFF",
+        "NME_BUILD_BENCHMARKS": "OFF",
+        "NME_BUILD_ASAN_CHECK": "OFF"
+      }
+    },
+    {
+      "name": "ship-msvc",
+      "displayName": "MSVC - Ship",
+      "description": "Package build (MSVC): engine + sandbox only",
+      "inherits": ["ship-base", "msvc"],
+      "binaryDir": "${sourceDir}/build/ship-msvc",
+      "installDir": "${sourceDir}/stage/msvc"
+    },
+    {
+      "name": "ship-clang-cl",
+      "displayName": "Clang-cl - Ship",
+      "description": "Package build (Clang-cl): engine + sandbox only",
+      "inherits": ["ship-base", "clang-cl"],
+      "binaryDir": "${sourceDir}/build/ship-clang-cl",
+      "installDir": "${sourceDir}/stage/clang-cl"
+    },
+    {
+      "name": "ship-gcc",
+      "displayName": "GCC - Ship",
+      "description": "Package build (GCC): engine + sandbox only",
+      "inherits": ["ship-base", "gcc"],
+      "binaryDir": "${sourceDir}/build/ship-gcc",
+      "installDir": "${sourceDir}/stage/gcc"
+    },
+    {
+      "name": "ship-clang",
+      "displayName": "Clang - Ship",
+      "description": "Package build (Clang): engine + sandbox only",
+      "inherits": ["ship-base", "clang"],
+      "binaryDir": "${sourceDir}/build/ship-clang",
+      "installDir": "${sourceDir}/stage/clang"
     }
   ],
   "buildPresets": [
@@ -87,12 +129,6 @@
       "displayName": "MSVC - Debug",
       "configurePreset": "msvc",
       "configuration": "Debug"
-    },
-    {
-      "name": "msvc-release",
-      "displayName": "MSVC - Release",
-      "configurePreset": "msvc",
-      "configuration": "Release"
     },
     {
       "name": "msvc-dev",
@@ -108,12 +144,6 @@
       "configuration": "Debug"
     },
     {
-      "name": "clang-cl-release",
-      "displayName": "Clang-cl - Release",
-      "configurePreset": "clang-cl",
-      "configuration": "Release"
-    },
-    {
       "name": "clang-cl-dev",
       "displayName": "Clang-cl - RelWithDebInfo",
       "configurePreset": "clang-cl",
@@ -125,12 +155,6 @@
       "displayName": "GCC - Debug",
       "configurePreset": "gcc",
       "configuration": "Debug"
-    },
-    {
-      "name": "gcc-release",
-      "displayName": "GCC - Release",
-      "configurePreset": "gcc",
-      "configuration": "Release"
     },
     {
       "name": "gcc-dev",
@@ -146,16 +170,95 @@
       "configuration": "Debug"
     },
     {
-      "name": "clang-release",
-      "displayName": "Clang - Release",
-      "configurePreset": "clang",
-      "configuration": "Release"
-    },
-    {
       "name": "clang-dev",
       "displayName": "Clang - RelWithDebInfo",
       "configurePreset": "clang",
       "configuration": "RelWithDebInfo"
+    },
+
+    {
+      "name": "ship-msvc-release",
+      "displayName": "MSVC - Ship (Release)",
+      "configurePreset": "ship-msvc",
+      "configuration": "Release"
+    },
+    {
+      "name": "ship-clang-cl-release",
+      "displayName": "Clang-cl - Ship (Release)",
+      "configurePreset": "ship-clang-cl",
+      "configuration": "Release"
+    },
+    {
+      "name": "ship-gcc-release",
+      "displayName": "GCC - Ship (Release)",
+      "configurePreset": "ship-gcc",
+      "configuration": "Release"
+    },
+    {
+      "name": "ship-clang-release",
+      "displayName": "Clang - Ship (Release)",
+      "configurePreset": "ship-clang",
+      "configuration": "Release"
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "ship-msvc",
+      "configurePreset": "ship-msvc",
+      "generators": ["ZIP"],
+      "configurations": ["Release"]
+    },
+    {
+      "name": "ship-clang-cl",
+      "configurePreset": "ship-clang-cl",
+      "generators": ["ZIP"],
+      "configurations": ["Release"]
+    },
+    {
+      "name": "ship-gcc",
+      "configurePreset": "ship-gcc",
+      "generators": ["TGZ"],
+      "configurations": ["Release"]
+    },
+    {
+      "name": "ship-clang",
+      "configurePreset": "ship-clang",
+      "generators": ["TGZ"],
+      "configurations": ["Release"]
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "ship-msvc",
+      "steps": [
+        { "type": "configure", "name": "ship-msvc" },
+        { "type": "build",     "name": "ship-msvc-release" },
+        { "type": "package",   "name": "ship-msvc" }
+      ]
+    },
+    {
+      "name": "ship-clang-cl",
+      "steps": [
+        { "type": "configure", "name": "ship-clang-cl" },
+        { "type": "build",     "name": "ship-clang-cl-release" },
+        { "type": "package",   "name": "ship-clang-cl" }
+      ]
+    },
+    {
+      "name": "ship-gcc",
+      "steps": [
+        { "type": "configure", "name": "ship-gcc" },
+        { "type": "build",     "name": "ship-gcc-release" },
+        { "type": "package",   "name": "ship-gcc" }
+      ]
+    },
+    {
+      "name": "ship-clang",
+      "steps": [
+        { "type": "configure", "name": "ship-clang" },
+        { "type": "build",     "name": "ship-clang-release" },
+        { "type": "package",   "name": "ship-clang" }
+      ]
     }
   ]
 }
