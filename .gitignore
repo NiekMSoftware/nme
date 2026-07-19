@@ -2,6 +2,7 @@
 /out/
 /build*/
 cmake-build-*/
+/.cache/
 
 # CMake / FetchContent
 CMakeCache.txt
