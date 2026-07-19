@@ -43,6 +43,17 @@ inline const T& fixed_array_at(const FixedArray<T, N>* a, const usize i) {
     return fixed_array_data(a)[i];
 }
 
+// --- queries ---
+
+template<typename T, usize N>
+inline usize fixed_array_size(const FixedArray<T, N>* a)      { return a->m_size; }
+template<typename T, usize N>
+constexpr usize fixed_array_capacity(const FixedArray<T, N>*) { return N; }
+template<typename T, usize N>
+constexpr bool fixed_array_empty(const FixedArray<T, N>* a)   { return a->m_size == 0; }
+template<typename T, usize N>
+constexpr bool fixed_array_full(const FixedArray<T, N>* a)    { return a->m_size == N; }
+
 }  // namespace nme
 
 #endif  // NME_COLLECTIONS_FIXED_ARRAY_H_
