@@ -116,6 +116,29 @@ inline Allocator heap_as_allocator(HeapAllocator* h) {
     return out;
 }
 
+// --- tagged view ---
+// the tag rides on the handle, so it's fiber-migration-safe
+
+struct TaggedHeap {
+    HeapAllocator* pHeap;
+    MemTag         m_tag;
+};
+
+inline void* tagged_heap_alloc_vtbl(void* pSelf, const usize bytes, const usize align) {
+    const auto* t = static_cast<TaggedHeap*>(pSelf);
+    return heap_alloc_tagged(t->pHeap, bytes, align, t->m_tag);
+}
+inline void tagged_heap_free_vtbl(void* pSelf, void* p, usize /*bytes*/) {
+    heap_free(static_cast<TaggedHeap*>(pSelf)->pHeap, p);   // header carries the real tag
+}
+inline Allocator tagged_heap_as_allocator(TaggedHeap* t) {
+    Allocator out{};
+    out.alloc = tagged_heap_alloc_vtbl;
+    out.free  = tagged_heap_free_vtbl;
+    out.self  = t;
+    return out;
+}
+
 }  // namespace nme
 
 #endif  // NME_MEMORY_HEAP_ALLOC_H_
