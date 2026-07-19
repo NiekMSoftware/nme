@@ -11,6 +11,8 @@
 #include <queue>
 #include <vector>
 
+using namespace nme;
+
 namespace {
 
 template<typename Lockable>
