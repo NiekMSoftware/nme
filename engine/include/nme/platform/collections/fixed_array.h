@@ -17,8 +17,8 @@ struct FixedArray {
     usize         m_size;
 
     // access by element so we could do 'arr[i]', explicit 'fixed_array_at(arr, i)' is also fine
-    T& operator[](usize i) noexcept { return m_storage[i]; }
-    const T& operator[](usize i) const noexcept { return m_storage[i]; }
+    T&       operator[](usize i)       noexcept { return reinterpret_cast<T*>(m_storage)[i]; }
+    const T& operator[](usize i) const noexcept { return reinterpret_cast<const T*>(m_storage)[i]; }
 };
 
 // Sets size to 0. Does not touch storage. Prefer this (or '={}') over a bare declaration
