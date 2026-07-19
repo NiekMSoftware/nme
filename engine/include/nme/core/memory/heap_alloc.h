@@ -2,6 +2,7 @@
 #define NME_MEMORY_HEAP_ALLOC_H_
 
 #include "align.h"
+#include "allocator.h"
 #include "nme/core/assert/assert.h"
 #include "nme/platform/thread/atomics.h"
 #include "nme/platform/types.h"
@@ -88,6 +89,31 @@ inline void heap_free(HeapAllocator* h, void* p) noexcept {
 
 inline void* heap_alloc(HeapAllocator* h, const usize bytes, const usize align) {
     return heap_alloc_tagged(h, bytes, align, MemTag::kDefault);
+}
+
+// --- stats for memory overlay ---
+
+inline iptr heap_bytes_used(const HeapAllocator* h, const MemTag tag) {
+    return h->m_used[static_cast<usize>(tag)].load(MemoryOrder::Relaxed);
+}
+inline iptr heap_bytes_peak(const HeapAllocator* h, const MemTag tag) {
+    return h->m_peak[static_cast<usize>(tag)].load(MemoryOrder::Relaxed);
+}
+
+// --- interface adapter ---
+
+inline void* heap_alloc_vtbl(void* pSelf, const usize bytes, const usize align) {
+    return heap_alloc(static_cast<HeapAllocator*>(pSelf), bytes, align);
+}
+inline void heap_free_vtbl(void* pSelf, void* p, usize /*bytes*/) {
+    heap_free(static_cast<HeapAllocator*>(pSelf), p);
+}
+inline Allocator heap_as_allocator(HeapAllocator* h) {
+    Allocator out{};
+    out.alloc = heap_alloc_vtbl;
+    out.free  = heap_free_vtbl;
+    out.self  = h;
+    return out;
 }
 
 }  // namespace nme
