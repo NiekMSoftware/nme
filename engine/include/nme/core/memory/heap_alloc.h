@@ -78,6 +78,18 @@ inline void* heap_alloc_tagged(HeapAllocator* h, const usize bytes, usize align,
     return reinterpret_cast<void*>(user);
 }
 
+inline void heap_free(HeapAllocator* h, void* p) noexcept {
+    if (!p) return;
+    const HeapHeader* hdr = static_cast<HeapHeader*>(p) - 1;
+    h->m_used[static_cast<usize>(hdr->tag)]
+        .fetchSub(static_cast<iptr>(hdr->size), MemoryOrder::Relaxed);
+    std::free(hdr->base);       // tag ignores on free, header is authority
+}
+
+inline void* heap_alloc(HeapAllocator* h, const usize bytes, const usize align) {
+    return heap_alloc_tagged(h, bytes, align, MemTag::kDefault);
+}
+
 }  // namespace nme
 
 #endif  // NME_MEMORY_HEAP_ALLOC_H_
