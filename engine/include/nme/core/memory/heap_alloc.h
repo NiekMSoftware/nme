@@ -1,12 +1,14 @@
 #ifndef NME_MEMORY_HEAP_ALLOC_H_
 #define NME_MEMORY_HEAP_ALLOC_H_
 
+#include "align.h"
+#include "nme/core/assert/assert.h"
 #include "nme/platform/thread/atomics.h"
 #include "nme/platform/types.h"
 
 namespace nme {
 
-enum class MemoryTag : u32 {
+enum class MemTag : u32 {
     kDefault,
     kRenderer,
     kPhysics,
@@ -16,13 +18,13 @@ enum class MemoryTag : u32 {
     kJobs,
     kCount
 };
-constexpr usize kMemTagCount = static_cast<usize>(MemoryTag::kCount);
+constexpr usize kMemTagCount = static_cast<usize>(MemTag::kCount);
 
 // Packed before the user pointer, carries everything free() needs.
 struct HeapHeader {
     void*     base;
     usize     size;
-    MemoryTag tag;
+    MemTag tag;
 };
 
 // General purpose heap, the root backing source + the variable-size fallback.
@@ -45,7 +47,36 @@ inline void heap_peak_max(Atomic<iptr>& peak, const iptr value) noexcept {
 
 }  // namespace detail
 
+// --- heap alloc ---
 
+inline void heap_alloc_init(HeapAllocator* h) {
+    for (usize i = 0; i < kMemTagCount; ++i) {
+        h->m_used[i].store(0, MemoryOrder::Relaxed);
+        h->m_peak[i].store(0, MemoryOrder::Relaxed);
+    }
+}
+
+inline void* heap_alloc_tagged(HeapAllocator* h, const usize bytes, usize align, const MemTag tag) {
+    NME_ASSERT(align != 0 && (align & (align - 1)) == 0);   // power of two
+    if (align < alignof(HeapHeader)) align = alignof(HeapHeader);
+
+    // one block: [ pad | HeapHeader | user bytes ], user aligned to 'align'
+    void* base = std::malloc(bytes + align + sizeof(HeapHeader));
+    if (!base) return nullptr;
+
+    const uptr raw = reinterpret_cast<uptr>(base) + sizeof(HeapHeader);
+    const uptr user = align_up(raw, align);
+    HeapHeader* hdr = reinterpret_cast<HeapHeader*>(user) - 1;
+    hdr->base = base;
+    hdr->size = bytes;
+    hdr->tag  = tag;
+
+    const auto i = static_cast<usize>(tag);
+    const iptr now = h->m_used[i].fetchAdd(static_cast<iptr>(bytes), MemoryOrder::Relaxed)
+                     + static_cast<iptr>(bytes);            // fetchAdd returns prior value
+    detail::heap_peak_max(h->m_peak[i], now);
+    return reinterpret_cast<void*>(user);
+}
 
 }  // namespace nme
 
