@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.26)
 
 # =========================================================
 #						Config
@@ -36,6 +36,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(NME_GFX_BACKEND "Vulkan" CACHE STRING "Graphics backend: Vulkan | Null")
 set_property(CACHE NME_GFX_BACKEND PROPERTY STRINGS Vulkan Null)
+
+set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/.cache/deps"
+        CACHE PATH "Shared dependency cache")
 
 # --- Language ---
 set(CMAKE_CXX_STANDARD ${NME_CXX_VERSION})
@@ -93,3 +96,9 @@ message(STATUS "  Build tests        : ${NME_BUILD_TESTS}")
 message(STATUS "  Build benchmarks   : ${NME_BUILD_BENCHMARKS}")
 message(STATUS "  Graphics backend   : ${NME_GFX_BACKEND}")
 message(STATUS "")
+
+set(CPACK_PACKAGE_NAME    "NME-Editor")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_GENERATOR       "ZIP")               # TGZ on Linux; NSIS/WIX for an installer, Win32 for now
+set(CPACK_PACKAGE_DIRECTORY "${CMAKE_BINARY_DIR}/dist")
+include(CPack)
