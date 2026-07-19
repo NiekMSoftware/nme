@@ -1,7 +1,6 @@
 # Unit tests via doctest - one executable per component.
 # Disable with -DNME_BUILD_TESTS=OFF if offline.
-include(FetchContent)
-FetchContent_Declare(doctest
+nme_declare(doctest
     GIT_REPOSITORY https://github.com/doctest/doctest.git
     GIT_TAG        v2.4.11
     GIT_SHALLOW    TRUE
@@ -12,7 +11,7 @@ FetchContent_MakeAvailable(doctest)
 option(NME_TEST_AGAINST_GLM "Validate nme::math against GLM (fetches GLM)" ON)
 
 if(NME_TEST_AGAINST_GLM)
-    FetchContent_Declare(glm
+    nme_declare(glm
             GIT_REPOSITORY https://github.com/g-truc/glm.git
             GIT_TAG        1.0.1
             GIT_SHALLOW    TRUE
