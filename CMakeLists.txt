@@ -37,8 +37,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(NME_GFX_BACKEND "Vulkan" CACHE STRING "Graphics backend: Vulkan | Null")
 set_property(CACHE NME_GFX_BACKEND PROPERTY STRINGS Vulkan Null)
 
-set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/.cache/deps"
-        CACHE PATH "Shared dependency cache")
+# Share only the CLONES across presets (toolchain-agnostic).
+set(NME_DEPS_CACHE "${CMAKE_SOURCE_DIR}/.cache/deps")
+set(FETCHCONTENT_SOURCE_DIR_BENCHMARK "${NME_DEPS_CACHE}/benchmark-src" CACHE PATH "")
+set(FETCHCONTENT_SOURCE_DIR_GLM       "${NME_DEPS_CACHE}/glm-src"       CACHE PATH "")
+set(FETCHCONTENT_SOURCE_DIR_DOCTEST   "${NME_DEPS_CACHE}/doctest-src"   CACHE PATH "")
 
 # --- Language ---
 set(CMAKE_CXX_STANDARD ${NME_CXX_VERSION})
