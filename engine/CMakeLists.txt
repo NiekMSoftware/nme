@@ -69,6 +69,8 @@ set(NME_CORE_HEADERS
         include/nme/core/result/error.h
         include/nme/core/result/result.h
 
+        include/nme/core/string/string_id.h
+
         include/nme/core/subsystem/subsystem.h
         include/nme/core/subsystem/kernel.h
 
