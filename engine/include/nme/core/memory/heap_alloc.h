@@ -25,7 +25,7 @@ constexpr usize kMemTagCount = static_cast<usize>(MemTag::kCount);
 struct HeapHeader {
     void*     base;
     usize     size;
-    MemTag tag;
+    MemTag    tag;
 };
 
 // General purpose heap, the root backing source + the variable-size fallback.
