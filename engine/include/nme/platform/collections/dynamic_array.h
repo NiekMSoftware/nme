@@ -13,8 +13,8 @@ struct DynamicArray {
     usize     m_capacity;   // number of slots the block can hold
     Allocator m_alloc;      // where growth + free comes from
 
-    T& operator[](usize i)             { return reinterpret_cast<T*>(pData)[i]; }
-    const T& operator[](usize i) const { return reinterpret_cast<T*>(pData)[i]; }
+    T& operator[](usize i)             { return pData[i]; }
+    const T& operator[](usize i) const { return pData[i]; }
 };
 
 template<typename T>
@@ -32,6 +32,28 @@ inline void dynamic_array_destroy(DynamicArray<T>* a) {
     a->pData = nullptr;
     a->m_size = 0;
     a->m_capacity = 0;
+}
+
+// --- element access ---
+
+template<typename T>
+inline T* dynamic_array_data(DynamicArray<T>* a) {
+    return a->pData;
+}
+template<typename T>
+inline const T* dynamic_array_data(const DynamicArray<T>* a) {
+    return a->pData;
+}
+
+template<typename T>
+inline T& dynamic_array_at(DynamicArray<T>* a, const usize i) {
+    NME_PLATFORM_ASSERT(i < a->m_size);
+    return dynamic_array_data(a)[i];
+}
+template<typename T>
+inline const T& dynamic_array_at(const DynamicArray<T>* a, const usize i) {
+    NME_PLATFORM_ASSERT(i < a->m_size);
+    return dynamic_array_data(a)[i];
 }
 
 }  // namespace nme
