@@ -1,8 +1,11 @@
+#include <nme/core/config/cvar.h>
+#include <nme/core/config/config_file.h>
 #include <nme/core/jobs/job_system.h>
-#include <nme/core/subsystem/subsystem_error.h>
+#include <nme/core/memory/heap_alloc.h>
 #include <nme/core/string/string_id.h>
 #include <nme/core/subsystem/kernel.h>
 #include <nme/core/subsystem/subsystem.h>
+#include <nme/core/subsystem/subsystem_error.h>
 #include <nme/core/util/scope_guard.h>
 #include <nme/platform/platform.h>
 #include <nme/platform/timer/timer.h>
@@ -12,8 +15,6 @@
 
 #include <cstdio>
 #include <cstdlib>
-
-#include "nme/core/memory/heap_alloc.h"
 
 namespace {
 
@@ -32,13 +33,48 @@ public:
     [[nodiscard]] const char* name() const override { return "Timer"; }
 };
 
+class ConfigSubsystem final : public nme::Subsystem {
+public:
+    [[nodiscard]] nme::SubsystemError startup() override {
+        nme::cvar_table_init(&table_);
+
+        // programmer defaults — the ini overrides these (Gregory's model)
+        nme::cvar_reg_float(&table_, NME_SID("physics.gravity"),   -9.81f, "physics.gravity");
+        nme::cvar_reg_int  (&table_, NME_SID("window.width"),       1280,  "window.width");
+        nme::cvar_reg_int  (&table_, NME_SID("window.height"),       720,  "window.height");
+        nme::cvar_reg_bool (&table_, NME_SID("debug.showProfiler"), false,  "debug.showProfiler");
+        nme::cvar_reg_int  (&table_, NME_SID("app.maxFrames"),         3,   "app.maxFrames");
+
+        // non-const: result_is_err() takes a non-const pointer
+        auto r = nme::config_load_ini(&table_, "config/engine.ini");
+        if (nme::result_is_err(&r)) {
+            std::puts("  config: engine.ini not found, using defaults");
+        } else {
+            std::printf("  config: applied %u override(s)\n",
+                        static_cast<unsigned>(nme::result_value(&r)));
+        }
+        return nme::subsystem_ok();
+    }
+
+    void shutdown() override {}
+
+    [[nodiscard]] const char* name() const override { return "Config"; }
+
+    nme::CVarTable* table() { return &table_; }
+
+private:
+    nme::CVarTable table_{};
+};
+
 // Borrowed
-TimerSubsystem* g_timer;
-nme::Renderer*  g_renderer;
-nme::JobSystem* g_jobs;
+ConfigSubsystem* g_config;
+TimerSubsystem*  g_timer;
+nme::Renderer*   g_renderer;
+nme::JobSystem*  g_jobs;
 
 nme::SubsystemError engine_startup(nme::Kernel& kernel) {
-    g_timer = kernel.add<TimerSubsystem>();
+    g_config   = kernel.add<ConfigSubsystem>();
+    g_timer    = kernel.add<TimerSubsystem>();
 
     // TODO: Add more subsystems
     g_renderer = kernel.add<nme::Renderer>();
@@ -50,6 +86,12 @@ nme::SubsystemError engine_startup(nme::Kernel& kernel) {
 void engine_run() {
     std::puts("entering main loop");
 
+    nme::CVarTable* cfg = g_config->table();
+
+    const nme::i32 maxFrames    = nme::cvar_get_int (cfg, NME_SID("app.maxFrames"), 3);
+    const bool     showProfiler = nme::cvar_get_bool(cfg, NME_SID("debug.showProfiler"), false);
+    std::printf("  config: maxFrames=%d showProfiler=%d\n", maxFrames, showProfiler ? 1 : 0);
+
     const nme::StringId kStages[] = {
         NME_SID("input.poll"),
         NME_SID("world.update"),
@@ -57,22 +99,18 @@ void engine_run() {
     };
     for (const nme::StringId stage : kStages) {
 #if NME_DEBUG
-        std::printf("    stage %016llx   (%s)\n",   // TEMP: proves debug recovery
-            static_cast<unsigned long long>(stage.value),
-            nme::sid_to_str(stage));
+        std::printf("    stage %016llx   (%s)\n",
+            static_cast<unsigned long long>(stage.value), nme::sid_to_str(stage));
 #else
-        std::printf("    stage %016llx\n",          // release: only the hash exists
-            static_cast<unsigned long long>(stage.value));
+        std::printf("    stage %016llx\n", static_cast<unsigned long long>(stage.value));
 #endif
     }
 
     using nme::platform::Timer;
-    const Timer &clock = nme::platform::global_timer();
+    const Timer& clock = nme::platform::global_timer();
 
     bool running = true;
     nme::u64 frame = 0;
-    constexpr nme::u64 kMaxFrames = 3;  // TEMP: no quit signal yet
-
     nme::u64 prev = Timer::now();
 
     while (running) {
@@ -80,14 +118,12 @@ void engine_run() {
         const nme::f64 dt = clock.to_seconds(curr - prev);
         prev = curr;
 
-        // input.poll();
-        // world.update(dt);
-        // renderer.submit();
+        // input.poll();  world.update(dt);  renderer.submit();
 
-        std::printf("  frame %llu  dt = %.6f s\n",   // TEMP: proves the clock ticks
+        std::printf("  frame %llu  dt = %.6f s\n",
                     static_cast<unsigned long long>(frame), dt);
 
-        if (++frame >= kMaxFrames) {
+        if (++frame >= static_cast<nme::u64>(maxFrames)) {
             running = false;
         }
     }
