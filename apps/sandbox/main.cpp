@@ -13,6 +13,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "nme/core/memory/heap_alloc.h"
+
 namespace {
 
 class TimerSubsystem final : public nme::Subsystem {
@@ -100,7 +102,10 @@ int main() {
     std::printf("%s  [%s | %s | %s]\n\n", nme::engine_version(),
                     NME_PLATFORM_NAME, NME_COMPILER_NAME, NME_DEBUG ? "debug" : "release");
 
-    nme::Kernel kernel;
+    nme::HeapAllocator g_heap{};
+    nme::heap_alloc_init(&g_heap);
+
+    nme::Kernel kernel(nme::heap_as_allocator(&g_heap));
 
     if (const nme::Error e = engine_startup(kernel); NME_FAILED(e)) {
         std::fprintf(stderr, "fatal: engine startup failed: (%s)\n",

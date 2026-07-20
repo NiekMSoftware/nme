@@ -1,21 +1,27 @@
 #pragma once
 
-#include <memory>   // unique_ptr
-#include <vector>   // TODO: replace with custom container
+#include <new>          // placement new
+#include <utility>      // std::forward
 
-#include "nme/platform/debug/assert.h"
+#include "nme/core/memory/allocator.h"
 #include "nme/core/result/error.h"
+#include "nme/platform/collections/dynamic_array.h"
+#include "nme/platform/debug/assert.h"
+#include "nme/platform/types.h"
 
 namespace nme {
 
 class Subsystem;
 
 class Kernel {
-    std::vector<std::unique_ptr<Subsystem>> m_subsystems;   ///< Owned subsystems, in start-up order.
-    usize m_started = 0;    ///< Count currently up (a prefix of m_subsystems).
+    DynamicArray<Subsystem*> m_subsystems{}; // owned; destroyed in reverse on shutdown
+    usize                    m_started = 0;  // count currently up (a prefix of m_subsystems)
+    Allocator                m_alloc;        // where subsystems + the array are allocated
 
 public:
-    Kernel() = default;
+    explicit Kernel(const Allocator& alloc) : m_alloc(alloc) {
+        dynamic_array_init(&m_subsystems, alloc);
+    }
     ~Kernel() { shutdown(); }
 
     Kernel(const Kernel&)            = delete;
@@ -32,10 +38,13 @@ public:
 template <class T, class... Args>
 T* Kernel::add(Args&&... args) {
     NME_ASSERT(m_started == 0);
-    auto sys = std::make_unique<T>(std::forward<Args>(args)...);
-    T* borrowed = sys.get();
-    m_subsystems.push_back(std::move(sys));
-    return borrowed;
+    void* mem = alloc(&m_alloc, sizeof(T), alignof(T));
+    NME_VERIFY(mem);
+    T* sys = ::new (mem) T(std::forward<Args>(args)...);
+
+    Subsystem* base = sys;
+    dynamic_array_push(&m_subsystems, base);
+    return sys;
 }
 
 }  // namespace nme
