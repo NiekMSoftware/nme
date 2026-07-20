@@ -1,5 +1,5 @@
-#ifndef NME_CONTAINERS_LINKED_LIST_H
-#define NME_CONTAINERS_LINKED_LIST_H
+#ifndef NME_CONTAINERS_LINKED_LIST_H_
+#define NME_CONTAINERS_LINKED_LIST_H_
 
 #include "nme/platform/debug/assert.h"
 #include "nme/platform/types.h"
@@ -119,4 +119,4 @@ inline T* list_prev(LinkedList<T, Link>* l, T* e) {
 
 }  // namespace nme
 
-#endif  // NME_CONTAINERS_LINKED_LIST_H
+#endif  // NME_CONTAINERS_LINKED_LIST_H_
