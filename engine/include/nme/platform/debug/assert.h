@@ -18,10 +18,11 @@ do {                                                                            
     }                                                                               \
 } while(0)
 
+// Verify is always active
+#define NME_VERIFY(expr) NME_IMPL_CHECK(expr)
+
 #if NME_DEBUG
     #define NME_ASSERT(expr) NME_IMPL_CHECK(expr)
-    #define NME_VERIFY(expr) NME_IMPL_CHECK(expr)
 #else
     #define NME_ASSERT(expr)   ((void)sizeof((expr) ? 1 : 0))
-    #define NME_VERIFY(expr)   ((void)(expr))
 #endif
