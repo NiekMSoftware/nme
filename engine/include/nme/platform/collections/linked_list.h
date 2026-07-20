@@ -13,6 +13,8 @@ struct ListLink {
     ListLink* prev;
 };
 
+// Intrusive doubly linked list of T using the embedded ListLink member `Link`.
+// The list does not own elements; callers manage element lifetime and removal.
 template<typename T, ListLink T::* Link>
 struct LinkedList {
     ListLink m_sentinel;        // ring anchor
