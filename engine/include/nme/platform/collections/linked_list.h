@@ -21,7 +21,7 @@ struct LinkedList {
 
 // --- link <-> element ---
 
-// Recover the enclosing T from an embedded link by subtractign the member's offset.
+// Recover the enclosing T from an embedded link by subtracting the member's offset.
 template<typename T, ListLink T::* Link>
 inline T* list_from_link(ListLink* link) {
     const uptr off = reinterpret_cast<usize>(&(reinterpret_cast<T*>(0)->*Link));
@@ -79,6 +79,40 @@ inline void list_remove(LinkedList<T, Link>* l, T* e) {
     detail::list_link_remove(n);
     n->next = n->prev = nullptr;
     --l->m_count;
+}
+
+// --- access ---
+
+template<typename T, ListLink T::* Link>
+inline T* list_front(LinkedList<T, Link>* l) {
+    NME_ASSERT(l->m_count > 0);
+    return list_from_link<T, Link>(l->m_sentinel.next);
+}
+template<typename T, ListLink T::* Link>
+inline T* list_back(LinkedList<T, Link>* l) {
+    NME_ASSERT(l->m_count > 0);
+    return list_from_link<T, Link>(l->m_sentinel.prev);
+}
+
+// --- iter ---
+
+template<typename T, ListLink T::* Link>
+inline T* list_head(LinkedList<T, Link>* l) {
+    return l->m_count > 0 ? list_from_link<T, Link>(l->m_sentinel.next) : nullptr;
+}
+template<typename T, ListLink T::* Link>
+inline T* list_tail(LinkedList<T, Link>* l) {
+    return l->m_count > 0 ? list_from_link<T, Link>(l->m_sentinel.prev) : nullptr;
+}
+template<typename T, ListLink T::* Link>
+inline T* list_next(LinkedList<T, Link>* l, T* e) {
+    ListLink* n = (e->*Link).next;
+    return n == &l->m_sentinel ? nullptr : list_from_link<T, Link>(n);
+}
+template<typename T, ListLink T::* Link>
+inline T* list_prev(LinkedList<T, Link>* l, T* e) {
+    ListLink* p = (e->*Link).prev;
+    return p == &l->m_sentinel ? nullptr : list_from_link<T, Link>(p);
 }
 
 }  // namespace nme
