@@ -1,7 +1,6 @@
 #pragma once
 
 #include "nme/platform/platform.h"
-#include "nme/platform/debug/debug_break.h"
 #include "nme/platform/types.h"
 
 namespace nme::detail

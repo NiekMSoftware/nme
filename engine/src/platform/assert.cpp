@@ -1,4 +1,5 @@
 #include "nme/platform/debug/assert.h"
+#include "nme/platform/debug/debug_break.h"
 
 #include <cstdio>  // std::snprintf, std::fputs, std::fflush, stderr
 #include <cstdlib>
