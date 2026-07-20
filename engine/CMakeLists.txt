@@ -19,8 +19,10 @@ set(NME_PLATFORM_HEADERS
         include/nme/platform/platform.h
         include/nme/platform/types.h
 
+        # Containers
         include/nme/platform/collections/dynamic_array.h
         include/nme/platform/collections/fixed_array.h
+        include/nme/platform/collections/linked_list.h
 
         # Debug
         include/nme/platform/debug/assert.h
