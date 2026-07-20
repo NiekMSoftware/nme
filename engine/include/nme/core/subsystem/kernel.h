@@ -41,9 +41,7 @@ T* Kernel::add(Args&&... args) {
     void* mem = alloc(&m_alloc, sizeof(T), alignof(T));
     NME_VERIFY(mem);
     T* sys = ::new (mem) T(std::forward<Args>(args)...);
-
-    Subsystem* base = sys;
-    dynamic_array_push(&m_subsystems, base);
+    dynamic_array_emplace(&m_subsystems, sys);
     return sys;
 }
 
