@@ -18,10 +18,11 @@ struct DynamicArray {
 };
 
 template<typename T>
-inline void dynamic_array_init(DynamicArray<T>* a) {
+inline void dynamic_array_init(DynamicArray<T>* a, Allocator alloc) {
     a->pData = nullptr;
     a->m_size = 0;
     a->m_capacity = 0;
+    a->m_alloc = alloc;
 }
 
 template<typename T>
