@@ -39,12 +39,12 @@ inline const T* fixed_array_data(const FixedArray<T, N>* a) {
 
 template<typename T, usize N>
 inline T& fixed_array_at(FixedArray<T, N>* a, const usize i) {
-    NME_PLATFORM_ASSERT(i < a->m_size);
+    NME_ASSERT(i < a->m_size);
     return fixed_array_data(a)[i];
 }
 template<typename T, usize N>
 inline const T& fixed_array_at(const FixedArray<T, N>* a, const usize i) {
-    NME_PLATFORM_ASSERT(i < a->m_size);
+    NME_ASSERT(i < a->m_size);
     return fixed_array_data(a)[i];
 }
 
@@ -74,7 +74,7 @@ inline T* fixed_array_push(FixedArray<T, N>* a, const T& value) {
 // Destroy the last element.
 template<typename T, usize N>
 inline void fixed_array_pop(FixedArray<T, N>* a) {
-    NME_PLATFORM_ASSERT(a->m_size > 0);
+    NME_ASSERT(a->m_size > 0);
     --a->m_size;
     fixed_array_data(a)[a->m_size].~T();
 }
@@ -82,7 +82,7 @@ inline void fixed_array_pop(FixedArray<T, N>* a) {
 // O(1) unordered erase, overwrite the hole with the last element, then pop.
 template<typename T, usize N>
 inline void fixed_array_erase_swap(FixedArray<T, N>* a, const usize i) {
-    NME_PLATFORM_ASSERT(i < a->m_size);
+    NME_ASSERT(i < a->m_size);
     T* data = fixed_array_data(a);
     const usize last = a->m_size - 1;
     if (i != last) {
