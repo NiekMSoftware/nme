@@ -1,6 +1,7 @@
 #include "nme/platform/debug/assert.h"
 
 #include <cstdio>  // std::snprintf, std::fputs, std::fflush, stderr
+#include <cstdlib>
 
 #if NME_PLATFORM_WINDOWS
 	#define WIN32_LEAN_AND_MEAN
@@ -26,5 +27,7 @@ namespace nme::detail {
 #if NME_PLATFORM_WINDOWS
 		OutputDebugStringA(buffer);
 #endif
+	    NME_DEBUG_BREAK();
+	    std::abort();
 	}
 }

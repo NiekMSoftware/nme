@@ -6,7 +6,7 @@
 
 namespace nme::detail
 {
-void nme_assert_handleFailure(const char* expr, const char* file,
+[[noreturn]] void nme_assert_handleFailure(const char* expr, const char* file,
                               const char* func, i32 line);
 }  // namespace nme::de
 
@@ -14,7 +14,6 @@ void nme_assert_handleFailure(const char* expr, const char* file,
 do {                                                                                \
     if (NME_UNLIKELY(!(expr))) {                                                      \
         nme::detail::nme_assert_handleFailure(#expr, __FILE__, __func__, __LINE__); \
-        NME_DEBUG_BREAK();                                                           \
     }                                                                               \
 } while(0)
 
