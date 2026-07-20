@@ -1,9 +1,9 @@
 #ifndef NME_MEMORY_HEAP_ALLOC_H_
 #define NME_MEMORY_HEAP_ALLOC_H_
 
-#include "../../platform/debug/assert.h"
-#include "align.h"
-#include "allocator.h"
+#include "nme/platform/debug/assert.h"
+#include "nme/platform/memory/allocator.h"
+#include "nme/platform/memory/align.h"
 #include "nme/platform/thread/atomics.h"
 #include "nme/platform/types.h"
 

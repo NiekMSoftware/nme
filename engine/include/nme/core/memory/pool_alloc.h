@@ -1,8 +1,8 @@
 #ifndef NME_POOL_ALLOC_H_
 #define NME_POOL_ALLOC_H_
 
-#include "nme/core/memory/align.h"
-#include "nme/core/memory/allocator.h"
+#include "nme/platform/memory/allocator.h"
+#include "nme/platform/memory/align.h"
 
 namespace nme {
 

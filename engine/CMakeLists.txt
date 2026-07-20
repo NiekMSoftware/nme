@@ -22,7 +22,9 @@ set(NME_PLATFORM_HEADERS
         # Containers
         include/nme/platform/collections/dynamic_array.h
         include/nme/platform/collections/fixed_array.h
+        include/nme/platform/collections/hash_map.h
         include/nme/platform/collections/linked_list.h
+        include/nme/platform/collections/ring_buffer.h
 
         # Debug
         include/nme/platform/debug/assert.h
@@ -32,6 +34,10 @@ set(NME_PLATFORM_HEADERS
         include/nme/platform/gfx/clip_space.h
         include/nme/platform/gfx/gfx_types.h
         include/nme/platform/gfx/gfx.h
+
+        # Memory
+        include/nme/platform/memory/align.h
+        include/nme/platform/memory/allocator.h
 
         # Threading
         include/nme/platform/thread/atomics.h
@@ -52,8 +58,6 @@ set(NME_CORE_SOURCES
         src/core/subsystem/kernel.cpp
 )
 set(NME_CORE_HEADERS
-        include/nme/core/memory/align.h
-        include/nme/core/memory/allocator.h
         include/nme/core/memory/heap_alloc.h
         include/nme/core/memory/pool_alloc.h
         include/nme/core/memory/scratch_alloc.h

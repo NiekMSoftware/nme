@@ -2,10 +2,10 @@
 // Created by niek on 7/18/2026.
 //
 
-#ifndef NME_ALLOCATOR_H_
-#define NME_ALLOCATOR_H_
+#ifndef NME_MEMORY_ALLOCATOR_H_
+#define NME_MEMORY_ALLOCATOR_H_
 
-#include "nme/core/memory/align.h"
+#include "nme/platform/memory/align.h"
 
 namespace nme {
 
@@ -26,4 +26,4 @@ inline void free(const Allocator* a, void* p, const usize bytes) {
 
 }  // namespace nme
 
-#endif  // NME_ALLOCATOR_H_
+#endif  // NME_MEMORY_ALLOCATOR_H_

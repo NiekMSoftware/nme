@@ -1,12 +1,12 @@
 #ifndef NME_COLLECTIONS_DYNAMIC_ARRAY_H_
 #define NME_COLLECTIONS_DYNAMIC_ARRAY_H_
 
+#include <cstring>      // std::memcpy
 #include <new>          // placement new
 #include <type_traits>  // is_trivially_copyable_v
-#include <cstring>      // std::memcpy
 
-#include "nme/core/memory/allocator.h"
 #include "nme/platform/debug/assert.h"
+#include "nme/platform/memory/allocator.h"
 #include "nme/platform/types.h"
 
 namespace nme {

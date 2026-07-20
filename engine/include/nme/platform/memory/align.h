@@ -2,9 +2,10 @@
 // Created by niek on 7/18/2026.
 //
 
-#ifndef NME_ALIGN_H_
-#define NME_ALIGN_H_
-#include "../../platform/debug/assert.h"
+#ifndef NME_MEMORY_ALIGN_H_
+#define NME_MEMORY_ALIGN_H_
+
+#include "nme/platform/debug/assert.h"
 #include "nme/platform/types.h"
 
 namespace nme {
@@ -17,4 +18,4 @@ inline uptr align_up(const uptr addr, const usize align) {
 
 }  // namespace nme
 
-#endif  // NME_ALIGN_H_
+#endif  // NME_MEMORY_ALIGN_H_

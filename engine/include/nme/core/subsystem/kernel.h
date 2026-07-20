@@ -3,7 +3,7 @@
 #include <new>          // placement new
 #include <utility>      // std::forward
 
-#include "nme/core/memory/allocator.h"
+#include "nme/platform/memory/allocator.h"
 #include "nme/core/result/error.h"
 #include "nme/platform/collections/dynamic_array.h"
 #include "nme/platform/debug/assert.h"
