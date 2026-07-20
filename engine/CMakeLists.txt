@@ -60,14 +60,16 @@ set(NME_CORE_SOURCES
         src/core/subsystem/kernel.cpp
 )
 set(NME_CORE_HEADERS
-        include/nme/core/memory/heap_alloc.h
-        include/nme/core/memory/pool_alloc.h
-        include/nme/core/memory/scratch_alloc.h
-        include/nme/core/memory/stack_alloc.h
+        include/nme/core/config/cvar.h
 
         include/nme/core/debug/log.h
         include/nme/core/debug/profiler.h
         include/nme/core/debug/scoped_timer.h
+
+        include/nme/core/memory/heap_alloc.h
+        include/nme/core/memory/pool_alloc.h
+        include/nme/core/memory/scratch_alloc.h
+        include/nme/core/memory/stack_alloc.h
 
         include/nme/core/jobs/job.h
         include/nme/core/jobs/job_system.h
