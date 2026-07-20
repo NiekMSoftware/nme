@@ -1,18 +1,27 @@
-#ifndef NME_PLATFORM_DEBUG_ASSERT_H_
-#define NME_PLATFORM_DEBUG_ASSERT_H_
+#pragma once
 
+#include "nme/platform/platform.h"
 #include "nme/platform/debug/debug_break.h"
+#include "nme/platform/types.h"
+
+namespace nme::detail
+{
+void nme_assert_handleFailure(const char* expr, const char* file,
+                              const char* func, i32 line);
+}  // namespace nme::de
+
+#define NME_IMPL_CHECK(expr)                                                        \
+do {                                                                                \
+    if (NME_UNLIKELY(!(expr))) {                                                      \
+        nme::detail::nme_assert_handleFailure(#expr, __FILE__, __func__, __LINE__); \
+        NME_DEBUG_BREAK();                                                           \
+    }                                                                               \
+} while(0)
 
 #if NME_DEBUG
-    #define NME_PLATFORM_ASSERT(expr) \
-        do {                          \
-            if (expr) {               \
-            } else {                  \
-                NME_DEBUG_BREAK();    \
-            }                         \
-        } while (0)
+    #define NME_ASSERT(expr) NME_IMPL_CHECK(expr)
+    #define NME_VERIFY(expr) NME_IMPL_CHECK(expr)
 #else
-    #define NME_PLATFORM_ASSERT(expr) ((void)0)
-#endif
-
+    #define NME_ASSERT(expr)   ((void)sizeof((expr) ? 1 : 0))
+    #define NME_VERIFY(expr)   ((void)(expr))
 #endif

@@ -51,8 +51,6 @@ set(NME_CORE_SOURCES
         src/core/subsystem/kernel.cpp
 )
 set(NME_CORE_HEADERS
-        include/nme/core/assert/assert.h
-
         include/nme/core/memory/align.h
         include/nme/core/memory/allocator.h
         include/nme/core/memory/heap_alloc.h

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nme/core/assert/assert.h"
+#include "../../../platform/debug/assert.h"
 
 namespace nme::math {
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "nme/core/result/error.h"
-#include "nme/core/assert/assert.h"
+#include <new>      // placement new
+#include <utility>  // std::move, std::forward
 
-#include <new>		// placement new
-#include <utility>	// std::move, std::forward
+#include "../../platform/debug/assert.h"
+#include "nme/core/result/error.h"
 
 namespace nme 
 {

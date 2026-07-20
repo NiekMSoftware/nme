@@ -4,7 +4,7 @@
 
 #ifndef NME_ALIGN_H_
 #define NME_ALIGN_H_
-#include "nme/core/assert/assert.h"
+#include "../../platform/debug/assert.h"
 #include "nme/platform/types.h"
 
 namespace nme {

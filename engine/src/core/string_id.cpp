@@ -7,7 +7,7 @@
 #include <cstring>
 #include <unordered_map>    // TODO: replace with a proper hash map/table from the collections
 
-#include "nme/core/assert/assert.h"
+#include "../../include/nme/platform/debug/assert.h"
 
 namespace nme {
 
