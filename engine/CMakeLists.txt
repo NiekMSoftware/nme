@@ -61,6 +61,7 @@ set(NME_CORE_SOURCES
         src/core/subsystem/kernel.cpp
 )
 set(NME_CORE_HEADERS
+        include/nme/core/config/config_file.h
         include/nme/core/config/cvar.h
 
         include/nme/core/debug/log.h

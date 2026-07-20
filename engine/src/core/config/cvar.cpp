@@ -4,7 +4,6 @@
 #include <cstdio>
 #include <cstdlib>
 
-
 namespace nme {
 
 void cvar_table_init(CVarTable* t) { t->count = 0; }
