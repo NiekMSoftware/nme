@@ -104,17 +104,38 @@ inline void dynamic_array_reserve(DynamicArray<T>* a, const usize new_cap) {
     a->m_capacity = new_cap;
 }
 
-// Construct a copy at the end, growing if needed. Returns the new slot.
+namespace detail {
+
 template<typename T>
-inline T* dynamic_array_push(DynamicArray<T>* a, const T& value) {
+inline void dynamic_array_grow_for_push(DynamicArray<T>* a) {
     if (a->m_size == a->m_capacity) {
         const usize next = a->m_capacity ? a->m_capacity * 2 : 8;
         dynamic_array_reserve(a, next);
     }
+}
+
+}  // namespace detail
+
+// Construct in place at the end from args, growing if needed. Returns the slot.
+template<typename T, typename... Args>
+inline T* dynamic_array_emplace(DynamicArray<T>* a, Args&&... args) {
+    detail::dynamic_array_grow_for_push(a);
     T* slot = a->pData + a->m_size;
-    ::new (static_cast<void*>(slot)) T(value);
+    ::new (static_cast<void*>(slot)) T(static_cast<Args&&>(args)...);   // forwards args
     ++a->m_size;
     return slot;
+}
+
+// Copy an element to the end.
+template<typename T>
+inline T* dynamic_array_push(DynamicArray<T>* a, const T& value) {
+    return dynamic_array_emplace(a, value);
+}
+
+// Move an element to the end (move-only or move-inexpensive T).
+template<typename T>
+inline T* dynamic_array_push(DynamicArray<T>* a, T&& value) {
+    return dynamic_array_emplace(a, static_cast<T&&>(value));
 }
 
 // Destroy the last element.
