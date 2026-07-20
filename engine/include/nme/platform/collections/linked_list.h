@@ -19,9 +19,9 @@ struct LinkedList {
 
 // --- link <-> element ---
 
+// Recover the enclosing T from an embedded link by subtractign the member's offset.
 template<typename T, ListLink T::* Link>
 inline T* list_from_link(ListLink* link) {
-    // offset of the Link member in T
     const uptr off = reinterpret_cast<usize>(&(reinterpret_cast<T*>(0)->*Link));
     return reinterpret_cast<T*>(reinterpret_cast<u8*>(link) - off);
 }
