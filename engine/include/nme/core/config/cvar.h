@@ -53,6 +53,8 @@ i32         cvar_get_int   (CVarTable* t, StringId name, i32         fb);
 f32         cvar_get_float (CVarTable* t, StringId name, f32         fb);
 const char* cvar_get_string(CVarTable* t, StringId name, const char* fb);
 
+bool cvar_set_from_str(CVarTable* t, StringId name, const char* v);
+
 }  // namespace nme
 
 
