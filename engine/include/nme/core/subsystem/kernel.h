@@ -3,7 +3,7 @@
 #include <memory>   // unique_ptr
 #include <vector>   // TODO: replace with custom container
 
-#include "../../platform/debug/assert.h"
+#include "nme/platform/debug/assert.h"
 #include "nme/core/result/error.h"
 
 namespace nme {

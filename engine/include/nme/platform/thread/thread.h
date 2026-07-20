@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nme/platform/types.h"
-#include "nme/platform/debug/assert.h" // NME_PLATFORM_ASSERT
+#include "nme/platform/debug/assert.h"
 
 #include <utility>  // std::move, std::forward, std::decay_t
 
@@ -56,7 +56,7 @@ public:
     }
     Thread& operator=(Thread &&o) noexcept { 
         if (this != &o) {
-            NME_PLATFORM_ASSERT(!joinable());
+            NME_ASSERT(!joinable());
             m_handle = o.m_handle; m_id = o.m_id;
             o.m_handle = nullptr; o.m_id = 0;
         }

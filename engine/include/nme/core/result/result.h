@@ -3,7 +3,7 @@
 #include <new>      // placement new
 #include <utility>  // std::move, std::forward
 
-#include "../../platform/debug/assert.h"
+#include "nme/platform/debug/assert.h"
 #include "nme/core/result/error.h"
 
 namespace nme 

@@ -28,7 +28,7 @@ void Thread::start(detail::ThreadClosureBase *closure, const ThreadConfig &cfg) 
 
     if (h == 0) {
         delete closure;              // no thread was created to free it
-        NME_PLATFORM_ASSERT(false);  // thread creation failing is fatal
+        NME_ASSERT(false);  // thread creation failing is fatal
         return;
     }
     m_handle = reinterpret_cast<void*>(h);
@@ -42,20 +42,20 @@ void Thread::start(detail::ThreadClosureBase *closure, const ThreadConfig &cfg) 
 }
 
 void Thread::join() {
-    NME_PLATFORM_ASSERT(joinable());
+    NME_ASSERT(joinable());
     WaitForSingleObject(static_cast<HANDLE>(m_handle), INFINITE);
     CloseHandle(static_cast<HANDLE>(m_handle));  // _beginthreadex handle must be closed
     m_handle = nullptr; m_id = 0;
 }
 
 void Thread::detach() {
-    NME_PLATFORM_ASSERT(joinable());
+    NME_ASSERT(joinable());
     CloseHandle(static_cast<HANDLE>(m_handle));
     m_handle = nullptr; m_id = 0;
 }
 
 Thread::~Thread() {
-    NME_PLATFORM_ASSERT(!joinable());
+    NME_ASSERT(!joinable());
 }
 
 void Thread::setAffinity(const u32 coreIndex) const {

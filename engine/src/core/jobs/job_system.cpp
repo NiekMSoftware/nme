@@ -3,7 +3,7 @@
 #include <new>     // placement new for deque array
 #include <thread>  // std::thread::hardware_concurrency (a query, not a spawn)
 
-#include "../../../include/nme/platform/debug/assert.h"
+#include "nme/platform/debug/assert.h"
 #include "nme/core/debug/profiler.h"
 
 namespace nme {
