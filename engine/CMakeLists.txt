@@ -30,6 +30,9 @@ set(NME_PLATFORM_HEADERS
         include/nme/platform/debug/assert.h
         include/nme/platform/debug/debug_break.h
 
+        # Error
+        include/nme/platform/error/result.h
+
         # Graphics
         include/nme/platform/gfx/clip_space.h
         include/nme/platform/gfx/gfx_types.h
@@ -73,9 +76,6 @@ set(NME_CORE_HEADERS
 
         include/nme/core/math/matrix.hpp
         include/nme/core/math/vec.hpp
-
-        include/nme/core/result/error.h
-        include/nme/core/result/result.h
 
         include/nme/core/string/string_id.h
 
