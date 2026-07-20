@@ -56,7 +56,6 @@ set(NME_PLATFORM_HEADERS
 # --- Core ---
 set(NME_CORE_SOURCES
         src/core/jobs/job_system.cpp
-        src/core/result/error.cpp
         src/core/string_id.cpp
         src/core/subsystem/kernel.cpp
 )

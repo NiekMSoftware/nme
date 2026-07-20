@@ -1,12 +1,12 @@
 #pragma once
 
-#include <new>          // placement new
-#include <utility>      // std::forward
+#include <new>      // placement new
+#include <utility>  // std::forward
 
-#include "nme/platform/memory/allocator.h"
-#include "nme/core/result/error.h"
+#include "nme/core/subsystem/subsystem_error.h"
 #include "nme/platform/collections/dynamic_array.h"
 #include "nme/platform/debug/assert.h"
+#include "nme/platform/memory/allocator.h"
 #include "nme/platform/types.h"
 
 namespace nme {
@@ -30,7 +30,7 @@ public:
     template<class T, class... Args>
     T* add(Args&&... args);
 
-    [[nodiscard]] Error startup();
+    [[nodiscard]] SubsystemError startup();
 
     void shutdown();
 };

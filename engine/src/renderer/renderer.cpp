@@ -2,12 +2,15 @@
 
 namespace nme {
 
-Error Renderer::startup() {
-    return Error::None;
+SubsystemError Renderer::startup() {
+    return to_subsystem_error(init());
 }
 
 void Renderer::shutdown() {
 
+}
+RendererError Renderer::init() {
+    return RendererError::None;
 }
 
 }  // namespace nme

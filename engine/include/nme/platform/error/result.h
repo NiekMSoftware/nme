@@ -4,7 +4,10 @@
 
 #ifndef NME_PLATFORM_ERROR_RESULT_H_
 #define NME_PLATFORM_ERROR_RESULT_H_
+
 #include <type_traits>
+
+#include "nme/platform/debug/assert.h"
 
 namespace nme {
 

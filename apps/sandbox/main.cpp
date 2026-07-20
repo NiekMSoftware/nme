@@ -1,5 +1,5 @@
 #include <nme/core/jobs/job_system.h>
-#include <nme/core/result/result.h>
+#include <nme/core/subsystem/subsystem_error.h>
 #include <nme/core/string/string_id.h>
 #include <nme/core/subsystem/kernel.h>
 #include <nme/core/subsystem/subsystem.h>
@@ -19,10 +19,10 @@ namespace {
 
 class TimerSubsystem final : public nme::Subsystem {
 public:
-    [[nodiscard]] nme::Error startup() override {
+    [[nodiscard]] nme::SubsystemError startup() override {
         if (!nme::platform::global_timer().startup())
-            return nme::Error::NotInitialized;
-        return nme::Error::None;
+            return nme::subsystem_error(nme::SubsystemError::Category::NotInitialized, "hi-res timer failed to start");
+        return nme::subsystem_ok();
     }
 
     void shutdown() override {
@@ -37,7 +37,7 @@ TimerSubsystem* g_timer;
 nme::Renderer*  g_renderer;
 nme::JobSystem* g_jobs;
 
-nme::Error engine_startup(nme::Kernel& kernel) {
+nme::SubsystemError engine_startup(nme::Kernel& kernel) {
     g_timer = kernel.add<TimerSubsystem>();
 
     // TODO: Add more subsystems
@@ -107,9 +107,9 @@ int main() {
 
     nme::Kernel kernel(nme::heap_as_allocator(&g_heap));
 
-    if (const nme::Error e = engine_startup(kernel); NME_FAILED(e)) {
-        std::fprintf(stderr, "fatal: engine startup failed: (%s)\n",
-            nme::error_toString(e));
+    if (const nme::SubsystemError e = engine_startup(kernel); subsystem_failed(e)) {
+        std::fprintf(stderr, "fatal: engine startup failed: %s (%s)\n",
+            e.detail, nme::subsystem_category_to_str(e.category));
         return EXIT_FAILURE;
     }
     NME_DEFER(kernel.shutdown());

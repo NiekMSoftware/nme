@@ -39,9 +39,9 @@ JobSystem::~JobSystem() {
     shutdown();
 }
 
-Error JobSystem::startup(const Config& cfg) {
+JobSystemError JobSystem::startup(const Config& cfg) {
     if (m_running.load(MemoryOrder::Acquire)) {
-        return Error::AlreadyInitialized;
+        return JobSystemError::AlreadyRunning;
     }
 
     u32 count = cfg.workerCount;
@@ -58,7 +58,7 @@ Error JobSystem::startup(const Config& cfg) {
         ::operator new[](sizeof(Deque) * m_dequeCount, std::nothrow));
     if (!m_dequeues) {
         m_workerCount = m_dequeCount = 0;
-        return Error::OutOfMemory;                  // nothing else acquired yet
+        return JobSystemError::OutOfMemory;                  // nothing else acquired yet
     }
     for (u32 i = 0; i < m_dequeCount; ++i) {
         ::new (&m_dequeues[i]) Deque();
@@ -70,7 +70,7 @@ Error JobSystem::startup(const Config& cfg) {
     if (!m_workers) {
         destroyDequeues();
         m_workerCount = 0;
-        return Error::OutOfMemory;
+        return JobSystemError::OutOfMemory;
     }
 
     // the main thread owns the last deque; that's how run/runN from main knows
@@ -101,11 +101,11 @@ Error JobSystem::startup(const Config& cfg) {
         if (!m_workers[i].joinable()) {
             m_workerCount = i + 1;                  // slots [0, i] are constructed
             shutdown();                             // joins the live ones, frees all
-            return Error::Unknown;
+            return JobSystemError::ThreadSpawnFailed;
         }
     }
 
-    return Error::None;
+    return JobSystemError::None;
 }
 
 void JobSystem::shutdown() {

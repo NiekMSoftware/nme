@@ -14,6 +14,38 @@
 
 namespace nme {
 
+enum class JobSystemError {
+    None = 0,
+    AlreadyRunning,     // startup() called while workers are already up
+    OutOfMemory,        // deque array or worker array allocation failed
+    ThreadSpawnFailed,  // a worker thread failed to launch
+};
+
+[[nodiscard]] constexpr SubsystemError::Category job_error_category(const JobSystemError e) noexcept {
+    switch (e) {
+        case JobSystemError::None:              return SubsystemError::Category::None;
+        case JobSystemError::AlreadyRunning:    return SubsystemError::Category::AlreadyInitialized;
+        case JobSystemError::OutOfMemory:       return SubsystemError::Category::OutOfMemory;
+        case JobSystemError::ThreadSpawnFailed: return SubsystemError::Category::Unknown;
+    }
+    return SubsystemError::Category::Unknown;
+}
+
+[[nodiscard]] constexpr const char* job_system_error_to_str(const JobSystemError e) noexcept {
+    switch (e) {
+        case JobSystemError::None:              return "None";
+        case JobSystemError::AlreadyRunning:    return "AlreadyRunning";
+        case JobSystemError::OutOfMemory:       return "OutOfMemory";
+        case JobSystemError::ThreadSpawnFailed: return "ThreadSpawnFailed";
+    }
+    return "JobSystemError(?)";
+}
+
+// carrier: coarse category for the Kernel + raw enum as code + log string in detail
+[[nodiscard]] constexpr SubsystemError to_subsystem_error(const JobSystemError e) noexcept {
+    return subsystem_error(job_error_category(e), job_system_error_to_str(e), static_cast<u32>(e));
+}
+
 class JobSystem final : public Subsystem {
 private:
     static constexpr usize kDequeCapacity = 8192;
@@ -49,8 +81,8 @@ public:
     JobSystem& operator=(JobSystem&& other)      = delete;
 
     // Spin up workers. Call once, from the main thread.
-    Error startup(const Config& cfg);
-    Error startup() override { return startup(Config{}); }   // defaults; Config is complete here
+    JobSystemError startup(const Config& cfg);
+    SubsystemError startup() override { return to_subsystem_error(startup(Config{})); }   // defaults; Config is complete here
 
     // Stop accepting, wake all workers, join them. Destructor calls this by default.
     void shutdown() override;

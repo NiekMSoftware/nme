@@ -4,19 +4,20 @@
 
 namespace nme {
 
-Error Kernel::startup() {
+SubsystemError Kernel::startup() {
     if (m_started > 0)
-        return Error::AlreadyInitialized;
+        return subsystem_error(SubsystemError::Category::AlreadyInitialized,
+                               "kernel: startup() called while already started");
 
     const usize count = dynamic_array_size(&m_subsystems);
     for (m_started = 0; m_started < count; ++m_started) {
-        if (const Error e = m_subsystems[m_started]->startup(); NME_FAILED(e)) {
+        if (const auto err = m_subsystems[m_started]->startup(); subsystem_failed(err)) {
             while (m_started > 0)
                 m_subsystems[--m_started]->shutdown();
-            return e;
+            return err;   // carries the failing subsystem's category + detail up
         }
     }
-    return Error::None;
+    return subsystem_ok();
 }
 
 void Kernel::shutdown() {
