@@ -56,6 +56,15 @@ inline const T& dynamic_array_at(const DynamicArray<T>* a, const usize i) {
     return dynamic_array_data(a)[i];
 }
 
+// --- queries ---
+
+template<typename T>
+inline usize dynamic_array_size(const DynamicArray<T>* a)     { return a->m_size; }
+template<typename T>
+inline usize dynamic_array_capacity(const DynamicArray<T>* a) { return a->m_capacity; }
+template<typename T>
+inline bool dynamic_array_empty(const DynamicArray<T>* a)     { return a->m_size == 0; }
+
 }  // namespace nme
 
 #endif  // NME_COLLECTIONS_DYNAMIC_ARRAY_H_
