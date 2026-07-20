@@ -19,6 +19,9 @@ set(NME_PLATFORM_HEADERS
         include/nme/platform/platform.h
         include/nme/platform/types.h
 
+        include/nme/platform/collections/dynamic_array.h
+        include/nme/platform/collections/fixed_array.h
+
         # Debug
         include/nme/platform/debug/assert.h
         include/nme/platform/debug/debug_break.h
