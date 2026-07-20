@@ -26,7 +26,7 @@ CVar* cvar_reg_bool(CVarTable* t, const StringId name, const bool def, const cha
 #if NME_DEBUG
     c->debugName = dbg;
 #else
-    (void)dbg
+    (void)dbg;
 #endif
 
     return c;
@@ -45,7 +45,7 @@ CVar* cvar_reg_float(CVarTable* t, const StringId name, const f32 def, const cha
 #if NME_DEBUG
     c->debugName = dbg;
 #else
-    (void)dbg
+    (void)dbg;
 #endif
 
     return c;
@@ -64,7 +64,7 @@ CVar* cvar_reg_int(CVarTable* t, const StringId name, const i32 def, const char*
 #if NME_DEBUG
     c->debugName = dbg;
 #else
-    (void)dbg
+    (void)dbg;
 #endif
 
     return c;
@@ -82,7 +82,7 @@ CVar* cvar_reg_string(CVarTable* t, const StringId name, const char* def, const 
 #if NME_DEBUG
     c->debugName = dbg;
 #else
-    (void)dbg
+    (void)dbg;
 #endif
 
     return c;

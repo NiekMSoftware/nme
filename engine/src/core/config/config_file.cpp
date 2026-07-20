@@ -9,10 +9,11 @@
 namespace {
 
 std::string_view trim(std::string_view s) {
-    const char* ws = "\t\r\n";
-    size_t a = s.find_first_not_of(ws);
+    const auto ws = " \t\r\n";
+    const size_t a = s.find_first_not_of(ws);
     if (a == std::string_view::npos) return {};
-    return s.substr(a, s.find_last_not_of(ws) - a + 1);
+    const size_t b = s.find_last_not_of(ws);
+    return s.substr(a, b - a + 1);                  // inclusive length
 }
 
 }  // anonymous namespace
@@ -32,7 +33,7 @@ Result<u32, ConfigError> config_load_ini(CVarTable* t, const char* path) {
     while (pos < src.size()) {
         size_t eol = src.find('\n', pos);
         if (eol == std::string_view::npos) eol = src.size();
-        std::string_view line = src.substr(pos, eol - pos);
+        std::string_view line = trim(src.substr(pos, eol - pos));
         pos = eol + 1;
 
         if (line.empty() || line[0]==';' || line[0]=='#') continue;  // ignore comments
@@ -43,11 +44,15 @@ Result<u32, ConfigError> config_load_ini(CVarTable* t, const char* path) {
             continue;
         }
 
-        size_t eq = line.find('=');
+        const size_t eq = line.find('=');
         if (eq == std::string_view::npos) continue;
 
         std::string_view key = trim(line.substr(0, eq));
         std::string_view val = trim(line.substr(eq + 1));
+
+        const size_t c = val.find_first_of(";#");       // inline comment start
+        if (c != std::string_view::npos) val = trim(val.substr(0, c));
+
         char full[kCVarStringMax], v[kCVarStringMax];
         if (section[0]) std::snprintf(full, sizeof(full), "%s.%.*s", section, static_cast<int>(key.size()), key.data());
         else            std::snprintf(full, sizeof(full), "%.*s", static_cast<int>(key.size()), key.data());
