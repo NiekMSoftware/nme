@@ -6,7 +6,7 @@ add_custom_command(TARGET sandbox POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/config"
         "$<TARGET_FILE_DIR:sandbox>/config"
-        COMMENT "Staging sandbox config -> $<TARGET_FILE_DIR:sandbox>/config"
+        COMMENT "Staging sandbox config to $<TARGET_FILE_DIR:sandbox>/config"
         VERBATIM)
 
 include(GNUInstallDirs)
