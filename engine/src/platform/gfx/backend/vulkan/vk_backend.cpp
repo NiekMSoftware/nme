@@ -163,7 +163,7 @@ Device create_device(const DeviceDesc* desc, GfxError* out_err) {
     qci.pQueuePriorities = &priority;
 
     const char* dev_ext[] = { "VK_KHR_swapchain" };
-    VkDeviceCreateInfo dci { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
+    VkDeviceCreateInfo dci { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
     dci.queueCreateInfoCount    = 1;
     dci.pQueueCreateInfos       = &qci;
     dci.enabledExtensionCount   = 1;
