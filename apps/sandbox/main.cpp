@@ -120,7 +120,7 @@ nme::SubsystemError engine_startup(nme::Kernel& kernel, const nme::Allocator& al
     g_window->set_allocator(alloc);
 
     // TODO: Add more subsystems
-    g_renderer = kernel.add<nme::Renderer>();
+    g_renderer = kernel.add<nme::Renderer>(g_window->surface(), alloc);
     g_jobs     = kernel.add<nme::JobSystem>();
 
     return kernel.startup();

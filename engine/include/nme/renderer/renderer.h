@@ -2,13 +2,15 @@
 
 #include "nme/core/subsystem/subsystem.h"
 #include "nme/core/subsystem/subsystem_error.h"
+#include "nme/platform/gfx/gfx.h"          // gfx::Surface, gfx::valid
+#include "nme/renderer/gdi/gdi.h"          // gdi::Device / Swapchain and the GDI calls
 
 //==============================================================================
-// Low-Level Renderer (Volume II)
-//   Gregory sec. 1.5 -- Low-Level Renderer
+// Low-Level Renderer
 //------------------------------------------------------------------------------
-// Responsibility documented; implementation added in the chapter/volume noted.
-// TODO: graphics device interface, materials/shaders, cameras, submission.
+// For now this owns the Graphics Device Interface: it brings up the GDI device
+// and a swapchain over the window's surface, and tears them down in reverse.
+// TODO: materials/shaders, cameras, per-frame submission.
 //==============================================================================
 
 namespace nme {
@@ -48,13 +50,26 @@ enum class RendererError {
 
 class Renderer final : public Subsystem {
 public:
+    // The window's surface must already be valid (start this AFTER the window
+    // subsystem). alloc backs the GDI's host-side allocations.
+    Renderer(const gfx::Surface surface, const Allocator& alloc)
+        : alloc_(alloc), surface_(surface) {}
+
     [[nodiscard]] SubsystemError startup() override;
     void shutdown() override;
 
     [[nodiscard]] const char* name() const override { return "Renderer"; }
 
+    [[nodiscard]] gdi::Device    device()    const { return device_; }
+    [[nodiscard]] gdi::Swapchain swapchain() const { return swapchain_; }
+
 private:
     RendererError init();   // real work speaks RendererError; startup() maps it
+
+    Allocator      alloc_;
+    gfx::Surface   surface_{};
+    gdi::Device    device_{};
+    gdi::Swapchain swapchain_{};
 };
 
 }  // namespace nme
