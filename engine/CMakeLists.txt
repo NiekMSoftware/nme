@@ -164,8 +164,7 @@ set_target_properties(nme_engine PROPERTIES FOLDER "nme")
 
 # Optional Tracy (Ch.2 stretch / Ch.10). OFF by default -> no network needed.
 if(NME_ENABLE_TRACY)
-    include(FetchContent)
-    FetchContent_Declare(tracy
+    nme_declare(tracy
         GIT_REPOSITORY https://github.com/wolfpld/tracy.git
         GIT_TAG        v0.11.1
         GIT_SHALLOW    TRUE)

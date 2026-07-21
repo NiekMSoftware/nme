@@ -49,7 +49,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 option(NME_WARNINGS_AS_ERRORS "Treat compiler warnings as errors"		ON)
 option(NME_ENABLE_SANITIZERS  "Enable address sanitizer + UBSan"		OFF)
-option(NME_ENABLE_TRACY		  "Fetch and enable the Tracy profiler"		OFF)
+option(NME_ENABLE_TRACY		  "Fetch and enable the Tracy profiler"		ON)
 option(NME_BUILD_TESTS		  "Build the unit-test target (needs network on first configure)" ON)
 option(NME_BUILD_ASAN_CHECK	  "Build the deliberate-bug program used to verify ASan" OFF)
 option(NME_BUILD_BENCHMARKS   "Build the benchmarks targets"            ON)
