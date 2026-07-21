@@ -1,4 +1,5 @@
 #include <cstring>  // std::strcmp
+#include <new>      // placement new & delete
 
 #include "nme/platform/collections/dynamic_array.h"
 #include "nme/renderer/gdi/gdi.h"
@@ -131,6 +132,7 @@ GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc_r
     auto* vd = static_cast<vk::VulkanDevice*>(
         alloc(&alloc_ref, sizeof(vk::VulkanDevice), alignof(vk::VulkanDevice)));
     ::new (vd) vk::VulkanDevice{};
+    vd->alloc = alloc_ref;
 
     vd->validation = desc && desc->debug && validation_available(alloc_ref);
 
@@ -208,7 +210,9 @@ void destroy_device(Device) {
     // TODO: destroy debug messenger before the instance.
 
     if (g_vk->instance) vkDestroyInstance(g_vk->instance, nullptr);
-    delete g_vk;
+    const Allocator alloc = g_vk->alloc;
+    g_vk->~VulkanDevice();
+    free(&alloc, g_vk, sizeof(vk::VulkanDevice));
     g_vk = nullptr;
 }
 

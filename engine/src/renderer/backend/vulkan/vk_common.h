@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.h>
 
 #include "nme/platform/gfx/gfx_types.h"
+#include "nme/platform/memory/allocator.h"
 #include "nme/renderer/gdi/gdi_types.h"
 
 namespace nme::gdi::vk {
@@ -16,6 +17,7 @@ struct VulkanDevice {
     VkQueue                  graphics_queue  = VK_NULL_HANDLE;
     VkDebugUtilsMessengerEXT debug           = VK_NULL_HANDLE;
     bool                     validation      = false;
+    Allocator                alloc{};
 };
 
 // Single active device. Multi-device would promote this to a small registry keyed by the handle id.
