@@ -117,7 +117,7 @@ GfxResult<Device> create_device(const DeviceDesc* desc) {
     // --- instance ---
     VkApplicationInfo app { VK_STRUCTURE_TYPE_APPLICATION_INFO };
     app.pApplicationName = "NME";
-    app.apiVersion       = VK_API_VERSION_1_2;   // TODO: bump to 1.3 (or enable VK_KHR_dynamic_rendering) for cmd_begin_render_pass
+    app.apiVersion       = VK_API_VERSION_1_3;
 
     const char* extensions[4];
     u32 ext_count = 0;
