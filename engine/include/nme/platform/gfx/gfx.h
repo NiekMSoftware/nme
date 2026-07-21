@@ -2,6 +2,7 @@
 #define NME_PLATFORM_GFX_GFX_H_
 
 #include "nme/platform/gfx/gfx_types.h"
+#include "nme/platform/memory/allocator.h"
 
 namespace nme::gfx {
 
@@ -11,7 +12,7 @@ namespace nme::gfx {
 // the impl wraps the native layer.
 // ---
 
-Surface create_surface(const WindowDesc* desc, GfxError* out_err = nullptr);
+Surface create_surface(const WindowDesc* desc, Allocator alloc, GfxError* out_err = nullptr);
 void    destroy_surface(Surface s);
 
 bool         poll_event(Surface s, Event* out); // false when queue drained

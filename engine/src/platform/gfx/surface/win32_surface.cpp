@@ -1,4 +1,5 @@
 #include "nme/platform/gfx/gfx.h"
+#include "nme/platform/collections/ring_buffer.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
@@ -24,23 +25,7 @@ struct SurfaceState {
     bool     should_close = false;
 
     // TODO: replace with fixed sized ring buffer
-    Event ring[kEventCap]{};
-    u32 head = 0, tail = 0, count = 0;
-
-    bool push(const Event& e) {
-        if (count >= kEventCap) return false;
-        ring[tail] = e;
-        tail = (tail + 1) % kEventCap;
-        ++count;
-        return true;
-    }
-    bool pop(Event* out) {
-        if (count == 0) return false;
-        *out = ring[head];
-        head = (head + 1) % kEventCap;
-        --count;
-        return true;
-    }
+    RingBuffer<Event> events{};
 };
 
 SurfaceState g_surfaces[kMaxSurfaces];
@@ -67,7 +52,7 @@ LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         case WM_CLOSE: {
             w->should_close = true;
             e.type = EventType::Close;
-            w->push(e);
+            ring_buffer_push(&w->events, e);
             return 0;
         }
 
@@ -77,7 +62,7 @@ LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if (ext.width && ext.height) {
                 e.type = EventType::Resize;
                 e.resize = ext;
-                w->push(e);
+                ring_buffer_push(&w->events, e);
                 return 0;
             }
         }
@@ -87,7 +72,7 @@ LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             e.type     = EventType::KeyDown;
             e.key.code = static_cast<u32>(wparam);
             e.key.down = true;
-            w->push(e);
+            ring_buffer_push(&w->events, e);
             return 0;
         }
 
@@ -96,7 +81,7 @@ LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             e.type     = EventType::KeyUp;
             e.key.code = static_cast<u32>(wparam);
             e.key.down = false;
-            w->push(e);
+            ring_buffer_push(&w->events, e);
             return 0;
         }
 
@@ -104,7 +89,7 @@ LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             e.type = EventType::MouseMove;
             e.mouse.x = GET_X_LPARAM(lparam);
             e.mouse.y = GET_Y_LPARAM(lparam);
-            w->push(e);
+            ring_buffer_push(&w->events, e);
             return 0;
         }
 
@@ -116,7 +101,7 @@ LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             e.mouse.y = GET_Y_LPARAM(lparam);
             e.mouse.button = static_cast<u32>(wparam);
             e.mouse.down = (msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN);
-            w->push(e);
+            ring_buffer_push(&w->events, e);
             return 0;
         }
 
@@ -124,7 +109,7 @@ LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         case WM_KILLFOCUS: {
             e.type = EventType::Focus;
             e.focus.gained = (msg == WM_SETFOCUS);
-            w->push(e);
+            ring_buffer_push(&w->events, e);
             return 0;
         }
 
@@ -150,7 +135,7 @@ bool register_class() {
 
 }  // anonymous namespace
 
-Surface create_surface(const WindowDesc* desc, GfxError* out_err) {
+Surface create_surface(const WindowDesc* desc, Allocator alloc, GfxError* out_err) {
     auto fail = [&](const GfxError e) { if (out_err) *out_err = e; return Surface{0}; };
 
     if (!desc)             return fail(GfxError::InvalidArgs);
@@ -167,6 +152,9 @@ Surface create_surface(const WindowDesc* desc, GfxError* out_err) {
 
     SurfaceState* w = &g_surfaces[slot];
     *w = SurfaceState{};
+
+    // init ring buffer
+    ring_buffer_init(&w->events, alloc, kEventCap);
 
     const DWORD style = desc->resizable
                         ? WS_OVERLAPPEDWINDOW
@@ -194,6 +182,7 @@ void destroy_surface(const Surface s) {
     SurfaceState* w = state_of(s);
     if (!w) return;
     if (w->hwnd) DestroyWindow(w->hwnd);
+    ring_buffer_destroy(&w->events);
     *w = SurfaceState{};
     g_used[s.id - 1] = false;
 }
@@ -202,13 +191,13 @@ bool poll_event(const Surface s, Event* out) {
     SurfaceState* w = state_of(s);
     if (!w || !out) return false;
 
-    if (w->pop(out)) return true;       // fast path: something queued
+    if (ring_buffer_pop(&w->events, out)) return true;       // fast path: something queued
 
     MSG msg;
     while (PeekMessageA(&msg, w->hwnd, 0, 0, PM_REMOVE)) {
         TranslateMessage(&msg);
         DispatchMessageA(&msg);         // wndproc enqueues into w
-        if (w->pop(out)) return true;
+        if (ring_buffer_pop(&w->events, out)) return true;
     }
     return false;                       // queue drained
 }

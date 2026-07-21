@@ -83,7 +83,7 @@ public:
         desc.resizable = true;
 
         nme::gfx::GfxError err = nme::gfx::GfxError::None;
-        surface_ = nme::gfx::create_surface(&desc, &err);
+        surface_ = nme::gfx::create_surface(&desc, alloc_, &err);
         if (!nme::gfx::valid(surface_))
             return nme::subsystem_error(nme::SubsystemError::Category::NotInitialized,
                                         "failed to create window surface");
@@ -100,8 +100,11 @@ public:
 
     [[nodiscard]] nme::gfx::Surface surface() const { return surface_; }
 
+    void set_allocator(const nme::Allocator& a) { alloc_ = a; }
+
 private:
     nme::gfx::Surface surface_{};   // id 0 == null until startup()
+    nme::Allocator alloc_{};
 };
 
 // Borrowed
@@ -110,10 +113,11 @@ WindowSubsystem* g_window;
 nme::Renderer*   g_renderer;
 nme::JobSystem*  g_jobs;
 
-nme::SubsystemError engine_startup(nme::Kernel& kernel) {
+nme::SubsystemError engine_startup(nme::Kernel& kernel, const nme::Allocator& alloc) {
     g_config   = kernel.add<ConfigSubsystem>();
     g_timer    = kernel.add<TimerSubsystem>();
     g_window   = kernel.add<WindowSubsystem>();   // after Config, before Renderer
+    g_window->set_allocator(alloc);
 
     // TODO: Add more subsystems
     g_renderer = kernel.add<nme::Renderer>();
@@ -193,7 +197,7 @@ int main() {
 
     nme::Kernel kernel(nme::heap_as_allocator(&g_heap));
 
-    if (const nme::SubsystemError e = engine_startup(kernel); subsystem_failed(e)) {
+    if (const nme::SubsystemError e = engine_startup(kernel, nme::heap_as_allocator(&g_heap)); subsystem_failed(e)) {
         std::fprintf(stderr, "fatal: engine startup failed: %s (%s)\n",
             e.detail, nme::subsystem_category_to_str(e.category));
         return EXIT_FAILURE;
