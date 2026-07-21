@@ -1,10 +1,18 @@
-#ifndef NME_PLATFORM_GFX_TYPES_H_
-#define NME_PLATFORM_GFX_TYPES_H_
+#ifndef NME_PLATFORM_GFX_GFX_TYPES_H_
+#define NME_PLATFORM_GFX_GFX_TYPES_H_
 
+#include "nme/platform/error/result.h"   // Result<T, E>
 #include "nme/platform/types.h"
+
+// Graphics Wrappers (Platform Independence Layer, Gregory Fig. 1.16).
+// The OS-facing half of graphics: the native window/surface and the shared
+// primitives the GDI (nme::gdi, in the renderer) builds on. Nothing here knows
+// about a GPU device -- that all lives one layer up.
 
 namespace nme::gfx {
 
+// Generic typed handle; id 0 is the null handle.
+// The GDI reuses this template for its own resource handles (down-dependency).
 template<typename Tag>
 struct Handle { u32 id; };
 
@@ -12,18 +20,13 @@ template<typename Tag> constexpr bool valid(Handle<Tag> h) { return h.id != 0; }
 template<typename Tag> constexpr bool operator==(Handle<Tag> a, Handle<Tag> b) { return a.id == b.id; }
 template<typename Tag> constexpr bool operator!=(Handle<Tag> a, Handle<Tag> b) { return a.id != b.id; }
 
-// Objects and resources alike are all just handles.
-using Device      = Handle<struct DeviceTag>;
-using Surface     = Handle<struct SurfaceTag>;      // window / native layer
-using Swapchain   = Handle<struct SwapchainTag>;
-using CommandList = Handle<struct CommandListTag>;
-using Buffer      = Handle<struct BufferTag>;
-using Texture     = Handle<struct TextureTag>;      // also serves as a render target
-using Shader      = Handle<struct ShaderTag>;
-using Pipeline    = Handle<struct PipelineTag>;
+// The one OS object owned by this layer.
+using Surface      = Handle<struct SurfaceTag>;     // window / native layer
+using NativeHandle = void*;                         // HWND / NSWindow* / ANativeWindow*, backend-specific
 
-using NativeHandle = void*;     // HWND / NSWindow* / ANativeWindow*, backend-specific
-
+// Shared graphics error. Surface creation reports the windowing subset
+// (Unknown / OutOfMemory / SurfaceLost); the GDI reuses the same enum for
+// device + swapchain failures so callers see one error type across the seam.
 enum class GfxError : u8 {
     None = 0,
     Unknown,
@@ -35,54 +38,15 @@ enum class GfxError : u8 {
     SwapchainOutOfDate
 };
 
-enum class Backend : u8 { Auto, Vulkan, D3D12, D3D11, Metal, OpenGL, OpenGLES, Null };
-
-enum class Format : u8 {
-    Undefined,
-    RGBA8Unorm, RGBA8Srgb, BGRA8Unorm, BGRA8Srgb,   // desktop back-buffer formats
-    RGBA16F,                                        // HDR targets
-    R32F, D32F, D24UnormS8                          // depth / depth-stencil
-};
-
-enum class PrimitiveTopology : u8 { TriangleList, TriangleStrip, LineList, PointList };
-enum class IndexType         : u8 { U16, U32 };
-enum class ShaderStage       : u8 { Vertex, Fragment, Compute };
-enum class PresentMode       : u8 { Fifo, Mailbox, Immediate };     // vsync / triple / off
-enum class LoadOp            : u8 { Load, Clear, DontCare };
-enum class StoreOp           : u8 { Store, DontCare };
-enum class MemoryAccess      : u8 { GpuOnly, CpuToGpu, GpuToCpu };
-
-#define NME_GFX_FLAGS(E) \
-    constexpr  E operator|(E a, E b)    noexcept { return static_cast<E>(u32(a) | u32(b)); } \
-    constexpr  E operator&(E a, E b)    noexcept { return static_cast<E>(u32(a) & u32(b)); } \
-    constexpr  E& operator|=(E& a, E b) noexcept { return a = a | b; }                       \
-    constexpr bool any(E a) noexcept { return u32(a) != 0; }
-
-enum class BufferUsage : u32 {
-    None = 0,
-    Vertex = 1 << 0,
-    Index  = 1 << 1,
-    Uniform = 1 << 2,
-    Storage = 1 << 3,
-    CopySrc = 1 << 4,
-    CopyDst = 1 << 5,
-};
-NME_GFX_FLAGS(BufferUsage);
-
-enum class TextureUsage : u32 {
-    None        = 0,
-    Sampled     = 1 << 0,
-    ColorTarget = 1 << 1,
-    DepthTarget = 1 << 2,
-    CopySrc     = 1 << 3,
-    CopyDst     = 1 << 4,
-};
-NME_GFX_FLAGS(TextureUsage)
+// Every fallible graphics call (surface creation + the whole GDI) reports
+// value-or-error through this. Result lives in nme::, so the unqualified name
+// resolves via the enclosing namespace.
+template<typename T>
+using GfxResult = Result<T, GfxError>;
 
 struct Extent2D { u32 width, height; };
-struct Rect2D   { i32 x, y; u32 width, height; };
-struct Color    { float r, g, b, a; };
-struct Viewport { float x, y, width, height, min_depth, max_depth; };
+
+// --- Window events ---
 
 enum class EventType : u8 { None, Close, Resize, KeyDown, KeyUp, MouseMove, MouseButton, Focus };
 
@@ -96,78 +60,12 @@ struct Event {
     };
 };
 
-// --- Descriptors ---
-
 struct WindowDesc {
     const char* title;
     Extent2D    extent;
     bool        resizable;
 };
 
-struct DeviceDesc {
-    Backend backend;    // auto = platform default
-    bool    debug;      // debug layers; off in ship builds
-};
+}  // namespace nme::gfx
 
-struct SwapchainDesc {
-    Extent2D    extent;
-    Format      format;
-    PresentMode present_mode;
-    u32         image_count;    // 2 = double, 3 = triple buffer
-};
-
-struct BufferDesc {
-    u64          size;
-    BufferUsage  usage;
-    MemoryAccess access;
-    const char*  debug_name;
-};
-
-struct TextureDesc {
-    Extent2D     extent;
-    Format       format;
-    TextureUsage usage;
-    u32          mip_levels;
-    const char*  debug_name;
-};
-
-struct ShaderDesc {
-    ShaderStage stage;
-    const void* bytecode;       // SPIR-V / DXIL / metallib, etc.
-    usize       size;
-    const char* entry;
-};
-
-struct PipelineDesc {
-    Shader            vertex_shader;
-    Shader            fragment_shader;
-    PrimitiveTopology topology;
-    Format            color_format;
-    Format            depth_format;
-    const char*       debug_name;
-};
-
-// --- Render Pass ---
-
-struct ColorAttachment {
-    Texture target;
-    LoadOp  load;
-    StoreOp store;
-    Color   clear;
-};
-
-struct DepthAttachment {
-    Texture target;
-    LoadOp  load;
-    StoreOp store;
-    float   clear_depth;
-};
-
-struct RenderPassDesc {
-    ColorAttachment color;
-    DepthAttachment depth;
-};
-
-}  // nme::gfx
-
-#endif  // NME_PLATFORM_GFX_TYPES_H_
+#endif  // NME_PLATFORM_GFX_GFX_TYPES_H_
