@@ -226,17 +226,13 @@ void device_wait_idle(Device) {
 // TODO: Each needs a VkBuffer/VkImage/VkShaderModule/VkPipeline created here and an
 // id -> object pool entry so the handle can resolve back. Stubbed for now.
 
-GfxResult<Buffer>   create_buffer(Device, const BufferDesc*)    { return result_err<Buffer, GfxError>(GfxError::Unknown); }
 GfxResult<Texture>  create_texture(Device, const TextureDesc*)  { return result_err<Texture, GfxError>(GfxError::Unknown); }
 GfxResult<Shader>   create_shader(Device, const ShaderDesc*)    { return result_err<Shader, GfxError>(GfxError::Unknown); }
 GfxResult<Pipeline> create_pipeline(Device, const PipelineDesc*){ return result_err<Pipeline, GfxError>(GfxError::Unknown); }
 
-void destroy_buffer(Device, Buffer)     {}   // TODO
 void destroy_texture(Device, Texture)   {}   // TODO
 void destroy_shader(Device, Shader)     {}   // TODO
 void destroy_pipeline(Device, Pipeline) {}   // TODO
-
-GfxError write_buffer(Device, Buffer, const void*, u64, u64) { return GfxError::Unknown; }  // TODO
 
 // --- frame + commands ---
 // TODO: Needs a VkCommandPool + per-frame VkCommandBuffers, and frame-in-flight

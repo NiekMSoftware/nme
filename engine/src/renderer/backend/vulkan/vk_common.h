@@ -54,7 +54,7 @@ inline BufferResource* resolve_buffer(VulkanDevice* vd, const Buffer h) {
 VulkanDevice* device_from(Device d) noexcept;
 
 // VkResult -> engine error, translated once at the backend boundary.
-GfxError vk_error(VkResult r) noexcept;
+GfxError to_error(VkResult r) noexcept;
 
 }  // namespace nme::gdi::vk
 
