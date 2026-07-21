@@ -138,8 +138,8 @@ endif()
 
 if (NME_GFX_BACKEND STREQUAL "Vulkan")
     target_sources(nme_engine PRIVATE
-            #src/platform/gfx/backend/vulkan/vk_backend.cpp
-            #src/platform/gfx/backend/vulkan/vk_swapchain.cpp
+            src/renderer/backend/vulkan/vk_backend.cpp
+            src/renderer/backend/vulkan/vk_swapchain.cpp
     )
     target_compile_definitions(nme_engine PUBLIC NME_GFX_VULKAN=1)
 else()

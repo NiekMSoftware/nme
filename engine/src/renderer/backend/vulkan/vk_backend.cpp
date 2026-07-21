@@ -1,10 +1,10 @@
 #include <cstring>  // std::strcmp
-#include <vector>  // TODO: swap for dynamic arr container once that's set
+#include <vector>  // TODO: swap for DynamicArray once create_device takes an Allocator
 
-#include "nme/platform/gfx/gfx.h"
+#include "nme/renderer/gdi/gdi.h"
 #include "vk_common.h"
 
-namespace nme::gfx {
+namespace nme::gdi {
 
 namespace {
 
@@ -108,8 +108,8 @@ GfxError to_error(const VkResult r) noexcept {
 
 }  // namespace vk
 
-Device create_device(const DeviceDesc* desc, GfxError* out_err) {
-    const auto fail = [&](const GfxError e) { if (out_err) *out_err = e; return Device{0}; };
+GfxResult<Device> create_device(const DeviceDesc* desc) {
+    const auto fail = [](const GfxError e) { return result_err<Device, GfxError>(e); };
 
     auto* vd = new vk::VulkanDevice{};
     vd->validation = desc && desc->debug && validation_available();
@@ -117,7 +117,7 @@ Device create_device(const DeviceDesc* desc, GfxError* out_err) {
     // --- instance ---
     VkApplicationInfo app { VK_STRUCTURE_TYPE_APPLICATION_INFO };
     app.pApplicationName = "NME";
-    app.apiVersion       = VK_API_VERSION_1_2;
+    app.apiVersion       = VK_API_VERSION_1_2;   // TODO: bump to 1.3 (or enable VK_KHR_dynamic_rendering) for cmd_begin_render_pass
 
     const char* extensions[4];
     u32 ext_count = 0;
@@ -125,7 +125,8 @@ Device create_device(const DeviceDesc* desc, GfxError* out_err) {
 #if defined(_WIN32)
     extensions[ext_count++] = "VK_KHR_win32_surface";
 #elif defined (__APPLE__)
-    extensions[ext_count++] = "VK_MVK_metal_surface";
+    extensions[ext_count++] = "VK_EXT_metal_surface";   // VK_MVK_metal_surface is deprecated
+    // TODO(apple): also add VK_KHR_portability_enumeration + set the create flag for MoltenVK.
 #elif defined (__linux__)
     extensions[ext_count++] = "VK_KHR_xcb_surface";
 #endif
@@ -163,7 +164,7 @@ Device create_device(const DeviceDesc* desc, GfxError* out_err) {
     qci.pQueuePriorities = &priority;
 
     const char* dev_ext[] = { "VK_KHR_swapchain" };
-    VkDeviceCreateInfo dci { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
+    VkDeviceCreateInfo dci { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };   // was DEVICE_QUEUE_CREATE_INFO (wrong sType)
     dci.queueCreateInfoCount    = 1;
     dci.pQueueCreateInfos       = &qci;
     dci.enabledExtensionCount   = 1;
@@ -177,8 +178,7 @@ Device create_device(const DeviceDesc* desc, GfxError* out_err) {
     vkGetDeviceQueue(vd->device, vd->graphics_family, 0, &vd->graphics_queue);
 
     g_vk = vd;
-    if (out_err) *out_err = GfxError::None;
-    return Device{1};
+    return result_ok<Device, GfxError>(Device{1});
 }
 
 void destroy_device(Device) {
@@ -200,13 +200,13 @@ void device_wait_idle(Device) {
 }
 
 // --- resources ---
-// TODO: Each needs a VKBuffer/VkImage/VkShaderModule/VkPipeline created here and an
+// TODO: Each needs a VkBuffer/VkImage/VkShaderModule/VkPipeline created here and an
 // id -> object pool entry so the handle can resolve back. Stubbed for now.
 
-Buffer   create_buffer(Device, const BufferDesc*, GfxError* e)     { if (e) *e = GfxError::Unknown; return {}; }
-Texture  create_texture(Device, const TextureDesc*, GfxError* e)   { if (e) *e = GfxError::Unknown; return {}; }
-Shader   create_shader(Device, const ShaderDesc*, GfxError* e)     { if (e) *e = GfxError::Unknown; return {}; }
-Pipeline create_pipeline(Device, const PipelineDesc*, GfxError* e) { if (e) *e = GfxError::Unknown; return {}; }
+GfxResult<Buffer>   create_buffer(Device, const BufferDesc*)     { return result_err<Buffer, GfxError>(GfxError::Unknown); }
+GfxResult<Texture>  create_texture(Device, const TextureDesc*)  { return result_err<Texture, GfxError>(GfxError::Unknown); }
+GfxResult<Shader>   create_shader(Device, const ShaderDesc*)    { return result_err<Shader, GfxError>(GfxError::Unknown); }
+GfxResult<Pipeline> create_pipeline(Device, const PipelineDesc*){ return result_err<Pipeline, GfxError>(GfxError::Unknown); }
 
 void destroy_buffer(Device, Buffer)     {}   // TODO
 void destroy_texture(Device, Texture)   {}   // TODO
@@ -238,4 +238,4 @@ void cmd_bind_index_buffer(CommandList, Buffer, IndexType, u64) {}      // TODO:
 void cmd_draw(CommandList, u32, u32) {}                                 // TODO: vkCmdDraw
 void cmd_draw_indexed(CommandList, u32, u32, i32) {}                    // TODO: vkCmdDrawIndexed
 
-}  // namespace nme::gfx
+}  // namespace nme::gdi

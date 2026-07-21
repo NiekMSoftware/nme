@@ -1,12 +1,12 @@
-#ifndef NME_GFX_VK_COMMON_H_
-#define NME_GFX_VK_COMMON_H_
+#ifndef NME_GDI_BACKEND_VULKAN_VK_COMMON_H_
+#define NME_GDI_BACKEND_VULKAN_VK_COMMON_H_
 
 #include <vulkan/vulkan.h>
 
 #include "nme/platform/gfx/gfx_types.h"
-#include "nme/platform/types.h"
+#include "nme/renderer/gdi/gdi_types.h"
 
-namespace nme::gfx::vk {
+namespace nme::gdi::vk {
 
 struct VulkanDevice {
     VkInstance               instance        = VK_NULL_HANDLE;
@@ -25,6 +25,6 @@ VulkanDevice* device_from(Device d) noexcept;
 // VkResult -> engine error, translated once at the backend boundary.
 GfxError vk_error(VkResult r) noexcept;
 
-}  // namespace nme::gfx::vk
+}  // namespace nme::gdi::vk
 
-#endif  // NME_GFX_VK_COMMON_H_
+#endif  // NME_GDI_BACKEND_VULKAN_VK_COMMON_H_
