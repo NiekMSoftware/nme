@@ -1,6 +1,6 @@
 #include <cstring>  // std::strcmp
-#include <vector>  // TODO: swap for DynamicArray once create_device takes an Allocator
 
+#include "nme/platform/collections/dynamic_array.h"
 #include "nme/renderer/gdi/gdi.h"
 #include "vk_common.h"
 
@@ -11,21 +11,27 @@ namespace {
 vk::VulkanDevice* g_vk = nullptr;   // the one active device
 
 // Returns true and writes the first graphics-capable queue family index.
-bool find_graphics_family(VkPhysicalDevice phys, u32* out_family) {
+bool find_graphics_family(VkPhysicalDevice phys, u32* out_family, const Allocator& alloc) {
     u32 qcount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(phys, &qcount, nullptr);
 
-    std::vector<VkQueueFamilyProperties> qprops(qcount);
+    DynamicArray<VkQueueFamilyProperties> qprops{};
+    dynamic_array_init(&qprops, alloc);
+    dynamic_array_reserve(&qprops, qcount);
+    vkGetPhysicalDeviceQueueFamilyProperties(phys, &qcount, dynamic_array_data(&qprops));
 
-    vkGetPhysicalDeviceQueueFamilyProperties(phys, &qcount, qprops.data());
-
+    const VkQueueFamilyProperties* qp = dynamic_array_data(&qprops);
+    bool found = false;
     for (u32 i = 0; i < qcount; ++i) {
-        if (qprops[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+        if (qp[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             *out_family = i;
+            found       = true;
             return true;
         }
     }
-    return false;
+
+    dynamic_array_destroy(&qprops);
+    return found;
 }
 
 // Higher is better
@@ -41,28 +47,34 @@ i32 score_device(VkPhysicalDevice phys) {
 
 // Pick the highest scoring device that actually has a graphics queue
 // and report that queue's family.
-bool pick_physical(VkInstance instance, VkPhysicalDevice* out_phys, u32* out_family) {
+bool pick_physical(VkInstance instance, VkPhysicalDevice* out_phys, u32* out_family, const Allocator& alloc) {
     u32 count = 0;
     vkEnumeratePhysicalDevices(instance, &count, nullptr);
     if (count == 0) return false;
 
-    std::vector<VkPhysicalDevice> devices(count);
-    vkEnumeratePhysicalDevices(instance, &count, devices.data());
+    DynamicArray<VkPhysicalDevice> devices{};
+    dynamic_array_init(&devices, alloc);
+    dynamic_array_reserve(&devices, count);
+    vkEnumeratePhysicalDevices(instance, &count, dynamic_array_data(&devices));
+
+    const VkPhysicalDevice* devs = dynamic_array_data(&devices);
 
     VkPhysicalDevice best        = VK_NULL_HANDLE;
     u32              best_family = 0;
     i32              best_score  = -1;
 
-    for (VkPhysicalDevice device : devices) {
+    for (u32 i = 0; i < count; ++i) {
         u32 family = 0;
-        if (!find_graphics_family(device, &family)) continue;   // no graphics queue -> unusable
+        if (!find_graphics_family(devs[i], &family, alloc)) continue;   // no graphics queue -> unusable
 
-        if (const i32 score = score_device(device); score > best_score) {
-            best        = device;
+        if (const i32 score = score_device(devs[i]); score > best_score) {
+            best        = devs[i];
             best_family = family;
             best_score  = score;
         }
     }
+
+    dynamic_array_destroy(&devices);
 
     if (best == VK_NULL_HANDLE) return false;
 
@@ -74,17 +86,26 @@ bool pick_physical(VkInstance instance, VkPhysicalDevice* out_phys, u32* out_fam
 
 constexpr const char* kValidationLayer = "VK_LAYER_KHRONOS_validation";
 
-bool validation_available() {
+bool validation_available(const Allocator& alloc) {
     u32 count = 0;
     vkEnumerateInstanceLayerProperties(&count, nullptr);
 
-    std::vector<VkLayerProperties> layers(count);
+    DynamicArray<VkLayerProperties> layers{};
+    dynamic_array_init(&layers, alloc);
+    dynamic_array_reserve(&layers, count);
+    vkEnumerateInstanceLayerProperties(&count, dynamic_array_data(&layers));
 
-    vkEnumerateInstanceLayerProperties(&count, layers.data());
-    for (const auto& layer : layers) {
-        if (std::strcmp(layer.layerName, kValidationLayer) == 0) return true;
+    const VkLayerProperties* ls = dynamic_array_data(&layers);
+    bool found = false;
+    for (u32 i = 0; i < count; ++i) {
+        if (std::strcmp(ls[i].layerName, kValidationLayer) == 0) {
+            found = true;
+            return true;
+        }
     }
-    return false;
+
+    dynamic_array_destroy(&layers);
+    return found;
 }
 
 }  // anonymous namespace
@@ -112,7 +133,7 @@ GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc) 
     const auto fail = [](const GfxError e) { return result_err<Device, GfxError>(e); };
 
     auto* vd = new vk::VulkanDevice{};
-    vd->validation = desc && desc->debug && validation_available();
+    vd->validation = desc && desc->debug && validation_available(alloc);
 
     // --- instance ---
     VkApplicationInfo app { VK_STRUCTURE_TYPE_APPLICATION_INFO };
@@ -150,7 +171,7 @@ GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc) 
     //       messages route through nme's logger.
 
     // --- physical device ---
-    if (!pick_physical(vd->instance, &vd->physical, &vd->graphics_family)) {
+    if (!pick_physical(vd->instance, &vd->physical, &vd->graphics_family, alloc)) {
         vkDestroyInstance(vd->instance, nullptr);
         delete vd;
         return fail(GfxError::BackendUnavailable);
