@@ -135,7 +135,7 @@ bool register_class() {
 
 }  // anonymous namespace
 
-Surface create_surface(const WindowDesc* desc, Allocator alloc, GfxError* out_err) {
+Surface create_surface(const WindowDesc* desc, const Allocator& alloc, GfxError* out_err) {
     auto fail = [&](const GfxError e) { if (out_err) *out_err = e; return Surface{0}; };
 
     if (!desc)             return fail(GfxError::InvalidArgs);
