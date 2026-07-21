@@ -143,7 +143,6 @@ LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 bool register_class() {
     static bool reg = false;
     if (reg) return true;
-
     WNDCLASSEXA wc{};
     wc.cbSize        = sizeof(wc);
     wc.style         = CS_HREDRAW | CS_VREDRAW;
@@ -152,15 +151,49 @@ bool register_class() {
     wc.hCursor       = LoadCursorA(nullptr, IDC_ARROW);
     wc.lpszClassName = kClassName;
     reg = RegisterClassExA(&wc) != 0;
-
     return reg;
 }
 
 }  // anonymous namespace
 
-Surface create_surface(const WindowDesc*, GfxError* out_err) {
+Surface create_surface(const WindowDesc* desc, GfxError* out_err) {
+    auto fail = [&](const GfxError e) { if (out_err) *out_err = e; return Surface{0}; };
+
+    if (!desc)             return fail(GfxError::InvalidArgs);
+    if (!register_class()) return fail(GfxError::Unknown);
+
+    u32 slot = kMaxSurfaces;
+    for (u32 i = 0; i < kMaxSurfaces; ++i) {
+        if (!g_used[i]) {
+            slot = i + 1;
+            break;
+        }
+    }
+    if (slot == kMaxSurfaces) return fail(GfxError::OutOfMemory);
+
+    SurfaceState* w = &g_surfaces[slot];
+    *w = SurfaceState{};
+
+    const DWORD style = desc->resizable
+                        ? WS_OVERLAPPEDWINDOW
+                        : (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU);
+
+    RECT rc{ 0, 0, static_cast<LONG>(desc->extent.width), static_cast<LONG>(desc->extent.height) };
+    AdjustWindowRect(&rc, style, FALSE);
+
+    w->hwnd = CreateWindowExA(
+        0, kClassName, desc->title, style,
+        CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top,
+        nullptr, nullptr, GetModuleHandleA(nullptr), w);
+
+    if (!w->hwnd) return fail(GfxError::Unknown);
+
+    g_used[slot] = true;
+    w->size      = desc->extent;
+    ShowWindow(w->hwnd, SW_SHOW);
+
     if (out_err) *out_err = GfxError::None;
-    return Surface{1};
+    return Surface{slot + 1};
 }
 void destroy_surface(Surface) {}
 
