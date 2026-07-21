@@ -82,8 +82,8 @@ public:
                            static_cast<nme::u32>(nme::cvar_get_int(cfg, NME_SID("window.height"),  720)) };
         desc.resizable = true;
 
-        nme::gfx::GfxError err = nme::gfx::GfxError::None;
-        surface_ = nme::gfx::create_surface(&desc, alloc_, &err);
+        const auto result = nme::gfx::create_surface(&desc, alloc_);
+        surface_ = nme::result_value(&result);
         if (!nme::gfx::valid(surface_))
             return nme::subsystem_error(nme::SubsystemError::Category::NotInitialized,
                                         "failed to create window surface");
