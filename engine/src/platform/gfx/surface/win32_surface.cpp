@@ -135,8 +135,8 @@ bool register_class() {
 
 }  // anonymous namespace
 
-Surface create_surface(const WindowDesc* desc, const Allocator& alloc, GfxError* out_err) {
-    auto fail = [&](const GfxError e) { if (out_err) *out_err = e; return Surface{0}; };
+GfxResult<Surface> create_surface(const WindowDesc* desc, const Allocator& alloc) {
+    const auto fail = [](const GfxError e) { return result_err<Surface, GfxError>(e); };
 
     if (!desc)             return fail(GfxError::InvalidArgs);
     if (!register_class()) return fail(GfxError::Unknown);
@@ -174,8 +174,7 @@ Surface create_surface(const WindowDesc* desc, const Allocator& alloc, GfxError*
     w->size      = desc->extent;
     ShowWindow(w->hwnd, SW_SHOW);
 
-    if (out_err) *out_err = GfxError::None;
-    return Surface{slot + 1};
+    return result_ok<Surface, GfxError>(Surface{slot + 1});
 }
 
 void destroy_surface(const Surface s) {
