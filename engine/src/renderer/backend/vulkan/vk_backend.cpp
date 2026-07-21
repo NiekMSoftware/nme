@@ -21,17 +21,15 @@ bool find_graphics_family(VkPhysicalDevice phys, u32* out_family, const Allocato
     vkGetPhysicalDeviceQueueFamilyProperties(phys, &qcount, dynamic_array_data(&qprops));
 
     const VkQueueFamilyProperties* qp = dynamic_array_data(&qprops);
-    bool found = false;
     for (u32 i = 0; i < qcount; ++i) {
         if (qp[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             *out_family = i;
-            found       = true;
             return true;
         }
     }
 
     dynamic_array_destroy(&qprops);
-    return found;
+    return false;
 }
 
 // Higher is better
@@ -96,16 +94,14 @@ bool validation_available(const Allocator& alloc) {
     vkEnumerateInstanceLayerProperties(&count, dynamic_array_data(&layers));
 
     const VkLayerProperties* ls = dynamic_array_data(&layers);
-    bool found = false;
     for (u32 i = 0; i < count; ++i) {
         if (std::strcmp(ls[i].layerName, kValidationLayer) == 0) {
-            found = true;
             return true;
         }
     }
 
     dynamic_array_destroy(&layers);
-    return found;
+    return false;
 }
 
 }  // anonymous namespace
