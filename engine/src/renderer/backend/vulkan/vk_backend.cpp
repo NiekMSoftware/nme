@@ -164,7 +164,8 @@ GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc_r
     }
 
     if (const VkResult r = vkCreateInstance(&ici, nullptr, &vd->instance); r != VK_SUCCESS) {
-        delete vd;
+        vd->~VulkanDevice();
+        free(&alloc_ref, vd, sizeof(vk::VulkanDevice));
         return fail(vk::to_error(r));
     }
 
@@ -174,7 +175,8 @@ GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc_r
     // --- physical device ---
     if (!pick_physical(vd->instance, &vd->physical, &vd->graphics_family, alloc_ref)) {
         vkDestroyInstance(vd->instance, nullptr);
-        delete vd;
+        vd->~VulkanDevice();
+        free(&alloc_ref, vd, sizeof(vk::VulkanDevice));
         return fail(GfxError::BackendUnavailable);
     }
 
@@ -194,10 +196,28 @@ GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc_r
 
     if (const VkResult r = vkCreateDevice(vd->physical, &dci, nullptr, &vd->device); r != VK_SUCCESS) {
         vkDestroyInstance(vd->instance, nullptr);
-        delete vd;
+        vd->~VulkanDevice();
+        free(&alloc_ref, vd, sizeof(vk::VulkanDevice));
         return fail(vk::to_error(r));
     }
     vkGetDeviceQueue(vd->device, vd->graphics_family, 0, &vd->graphics_queue);
+
+    // --- VMA alloc ---
+    VmaAllocatorCreateInfo vaci{};
+    vaci.instance         = vd->instance;
+    vaci.physicalDevice   = vd->physical;
+    vaci.device           = vd->device;
+    vaci.vulkanApiVersion = VK_API_VERSION_1_3;
+    if (const VkResult r = vmaCreateAllocator(&vaci, &vd->allocator); r != VK_SUCCESS) {
+        vkDestroyDevice(vd->device, nullptr);
+        vkDestroyInstance(vd->instance, nullptr);
+        vd->~VulkanDevice();
+        free(&alloc_ref, vd, sizeof(vk::VulkanDevice));
+        return fail(vk::to_error(r));
+    }
+
+    dynamic_array_init(&vd->buffers, alloc_ref);
+    dynamic_array_init(&vd->buffer_free, alloc_ref);
 
     g_vk = vd;
     return result_ok<Device, GfxError>(Device{1});
@@ -205,6 +225,15 @@ GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc_r
 
 void destroy_device(Device) {
     if (!g_vk) return;
+
+    for (usize i = 0; i < dynamic_array_size(&g_vk->buffers); ++i) {
+        if (const vk::BufferResource* r = &g_vk->buffers[i]; r->in_use)
+            vmaDestroyBuffer(g_vk->allocator, r->buffer, r->allocation);
+    }
+    dynamic_array_destroy(&g_vk->buffers);
+    dynamic_array_destroy(&g_vk->buffer_free);
+    if (g_vk->allocator) vmaDestroyAllocator(g_vk->allocator);
+
     if (g_vk->device)   vkDestroyDevice(g_vk->device, nullptr);
     // TODO: destroy debug messenger before the instance.
     if (g_vk->instance) vkDestroyInstance(g_vk->instance, nullptr);
