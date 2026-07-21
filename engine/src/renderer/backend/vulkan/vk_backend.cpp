@@ -108,7 +108,7 @@ GfxError to_error(const VkResult r) noexcept {
 
 }  // namespace vk
 
-GfxResult<Device> create_device(const DeviceDesc* desc) {
+GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc) {
     const auto fail = [](const GfxError e) { return result_err<Device, GfxError>(e); };
 
     auto* vd = new vk::VulkanDevice{};

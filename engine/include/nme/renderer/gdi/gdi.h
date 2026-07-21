@@ -12,7 +12,7 @@ namespace nme::gdi {
 // Enumerates + initializes the adapter and owns every resource below.
 // ---
 
-GfxResult<Device> create_device(const DeviceDesc* desc);
+GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc);
 void              destroy_device(Device d);
 Backend           device_backend(Device d);
 void              device_wait_idle(Device d);
