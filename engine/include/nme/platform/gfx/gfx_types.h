@@ -89,10 +89,10 @@ enum class EventType : u8 { None, Close, Resize, KeyDown, KeyUp, MouseMove, Mous
 struct Event {
     EventType type;
     union {
-        Extent2D                        resize;
-        struct { i32 x, y; }            mouse;
-        struct { u32 code; bool down; } key;
-        struct { bool gained; }         focus;
+        Extent2D                                    resize;
+        struct { i32 x, y; u32 button; bool down; } mouse;
+        struct { u32 code; bool down; }             key;
+        struct { bool gained; }                     focus;
     };
 };
 

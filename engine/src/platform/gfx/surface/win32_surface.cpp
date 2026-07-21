@@ -8,11 +8,11 @@
 
 namespace nme::gfx {
 
-Surface createSurface(const WindowDesc*, GfxError* out_err) {
+Surface create_surface(const WindowDesc*, GfxError* out_err) {
     if (out_err) *out_err = GfxError::None;
     return Surface{1};
 }
-void destroySurface(Surface) {}
+void destroy_surface(Surface) {}
 
 bool poll_event(Surface, Event*) { return false; }
 bool surface_should_close(Surface) { return false; }

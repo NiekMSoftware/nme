@@ -11,8 +11,8 @@ namespace nme::gfx {
 // the impl wraps the native layer.
 // ---
 
-Surface createSurface(const WindowDesc* desc, GfxError* out_err = nullptr);
-void    destroySurface(Surface s);
+Surface create_surface(const WindowDesc* desc, GfxError* out_err = nullptr);
+void    destroy_surface(Surface s);
 
 bool         poll_event(Surface s, Event* out); // false when queue drained
 bool         surface_should_close(Surface s);
