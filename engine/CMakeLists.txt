@@ -92,7 +92,10 @@ set(NME_CORE_HEADERS
 
 # --- Renderer ---
 set(NME_RENDERER_SOURCES
-    src/renderer/renderer.cpp
+        src/renderer/renderer.cpp
+)
+set(NME_RENDERER_HEADERS
+        include/nme/renderer/gdi/gdi_types.h
 )
 
 target_sources(nme_engine
@@ -108,6 +111,7 @@ target_sources(nme_engine
         FILES 
             ${NME_PLATFORM_HEADERS}
             ${NME_CORE_HEADERS}
+            ${NME_RENDERER_HEADERS}
 )
 
 # --- Platform-specific sources ---
