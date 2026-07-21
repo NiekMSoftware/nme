@@ -125,11 +125,14 @@ GfxError to_error(const VkResult r) noexcept {
 
 }  // namespace vk
 
-GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc) {
+GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc_ref) {
     const auto fail = [](const GfxError e) { return result_err<Device, GfxError>(e); };
 
-    auto* vd = new vk::VulkanDevice{};
-    vd->validation = desc && desc->debug && validation_available(alloc);
+    auto* vd = static_cast<vk::VulkanDevice*>(
+        alloc(&alloc_ref, sizeof(vk::VulkanDevice), alignof(vk::VulkanDevice)));
+    ::new (vd) vk::VulkanDevice{};
+
+    vd->validation = desc && desc->debug && validation_available(alloc_ref);
 
     // --- instance ---
     VkApplicationInfo app { VK_STRUCTURE_TYPE_APPLICATION_INFO };
@@ -167,7 +170,7 @@ GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc) 
     //       messages route through nme's logger.
 
     // --- physical device ---
-    if (!pick_physical(vd->instance, &vd->physical, &vd->graphics_family, alloc)) {
+    if (!pick_physical(vd->instance, &vd->physical, &vd->graphics_family, alloc_ref)) {
         vkDestroyInstance(vd->instance, nullptr);
         delete vd;
         return fail(GfxError::BackendUnavailable);
@@ -181,7 +184,7 @@ GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc) 
     qci.pQueuePriorities = &priority;
 
     const char* dev_ext[] = { "VK_KHR_swapchain" };
-    VkDeviceCreateInfo dci { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };   // was DEVICE_QUEUE_CREATE_INFO (wrong sType)
+    VkDeviceCreateInfo dci { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
     dci.queueCreateInfoCount    = 1;
     dci.pQueueCreateInfos       = &qci;
     dci.enabledExtensionCount   = 1;
