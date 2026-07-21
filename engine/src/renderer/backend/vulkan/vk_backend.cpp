@@ -206,10 +206,9 @@ GfxResult<Device> create_device(const DeviceDesc* desc, const Allocator& alloc_r
 void destroy_device(Device) {
     if (!g_vk) return;
     if (g_vk->device)   vkDestroyDevice(g_vk->device, nullptr);
-
     // TODO: destroy debug messenger before the instance.
-
     if (g_vk->instance) vkDestroyInstance(g_vk->instance, nullptr);
+
     const Allocator alloc = g_vk->alloc;
     g_vk->~VulkanDevice();
     free(&alloc, g_vk, sizeof(vk::VulkanDevice));
@@ -227,7 +226,7 @@ void device_wait_idle(Device) {
 // TODO: Each needs a VkBuffer/VkImage/VkShaderModule/VkPipeline created here and an
 // id -> object pool entry so the handle can resolve back. Stubbed for now.
 
-GfxResult<Buffer>   create_buffer(Device, const BufferDesc*)     { return result_err<Buffer, GfxError>(GfxError::Unknown); }
+GfxResult<Buffer>   create_buffer(Device, const BufferDesc*)    { return result_err<Buffer, GfxError>(GfxError::Unknown); }
 GfxResult<Texture>  create_texture(Device, const TextureDesc*)  { return result_err<Texture, GfxError>(GfxError::Unknown); }
 GfxResult<Shader>   create_shader(Device, const ShaderDesc*)    { return result_err<Shader, GfxError>(GfxError::Unknown); }
 GfxResult<Pipeline> create_pipeline(Device, const PipelineDesc*){ return result_err<Pipeline, GfxError>(GfxError::Unknown); }
