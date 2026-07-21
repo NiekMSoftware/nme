@@ -7,6 +7,7 @@
 #include <nme/core/subsystem/subsystem.h>
 #include <nme/core/subsystem/subsystem_error.h>
 #include <nme/core/util/scope_guard.h>
+#include <nme/platform/gfx/gfx.h>
 #include <nme/platform/platform.h>
 #include <nme/platform/timer/timer.h>
 #include <nme/platform/types.h>
@@ -44,7 +45,6 @@ public:
         nme::cvar_reg_int  (&table_, NME_SID("window.width"),       1280,  "window.width");
         nme::cvar_reg_int  (&table_, NME_SID("window.height"),       720,  "window.height");
         nme::cvar_reg_bool (&table_, NME_SID("debug.showProfiler"), false,  "debug.showProfiler");
-        nme::cvar_reg_int  (&table_, NME_SID("app.maxFrames"),         3,   "app.maxFrames");
 
         // non-const: result_is_err() takes a non-const pointer
         auto r = nme::config_load_ini(&table_, "config/engine.ini");
@@ -67,15 +67,53 @@ private:
     nme::CVarTable table_{};
 };
 
-// Borrowed
 ConfigSubsystem* g_config;
+
+// Owns the OS window surface (platform/gfx). Wraps a platform resource for
+// lifecycle, exactly like TimerSubsystem. MUST start after Config (reads CVars).
+class WindowSubsystem final : public nme::Subsystem {
+public:
+    [[nodiscard]] nme::SubsystemError startup() override {
+        nme::CVarTable* cfg = g_config->table();
+
+        nme::gfx::WindowDesc desc{};
+        desc.title     = "nme";
+        desc.extent    = { static_cast<nme::u32>(nme::cvar_get_int(cfg, NME_SID("window.width"),  1280)),
+                           static_cast<nme::u32>(nme::cvar_get_int(cfg, NME_SID("window.height"),  720)) };
+        desc.resizable = true;
+
+        nme::gfx::GfxError err = nme::gfx::GfxError::None;
+        surface_ = nme::gfx::create_surface(&desc, &err);
+        if (!nme::gfx::valid(surface_))
+            return nme::subsystem_error(nme::SubsystemError::Category::NotInitialized,
+                                        "failed to create window surface");
+
+        std::printf("  window: %ux%u\n", desc.extent.width, desc.extent.height);
+        return nme::subsystem_ok();
+    }
+
+    void shutdown() override {
+        nme::gfx::destroy_surface(surface_);
+    }
+
+    [[nodiscard]] const char* name() const override { return "Window"; }
+
+    [[nodiscard]] nme::gfx::Surface surface() const { return surface_; }
+
+private:
+    nme::gfx::Surface surface_{};   // id 0 == null until startup()
+};
+
+// Borrowed
 TimerSubsystem*  g_timer;
+WindowSubsystem* g_window;
 nme::Renderer*   g_renderer;
 nme::JobSystem*  g_jobs;
 
 nme::SubsystemError engine_startup(nme::Kernel& kernel) {
     g_config   = kernel.add<ConfigSubsystem>();
     g_timer    = kernel.add<TimerSubsystem>();
+    g_window   = kernel.add<WindowSubsystem>();   // after Config, before Renderer
 
     // TODO: Add more subsystems
     g_renderer = kernel.add<nme::Renderer>();
@@ -89,9 +127,8 @@ void engine_run() {
 
     nme::CVarTable* cfg = g_config->table();
 
-    const nme::i32 maxFrames    = nme::cvar_get_int (cfg, NME_SID("app.maxFrames"), 3);
-    const bool     showProfiler = nme::cvar_get_bool(cfg, NME_SID("debug.showProfiler"), false);
-    std::printf("  config: maxFrames=%d showProfiler=%d\n", maxFrames, showProfiler ? 1 : 0);
+    const bool showProfiler = nme::cvar_get_bool(cfg, NME_SID("debug.showProfiler"), false);
+    std::printf("  config: showProfiler=%d\n", showProfiler ? 1 : 0);
 
     const nme::StringId kStages[] = {
         NME_SID("input.poll"),
@@ -108,29 +145,41 @@ void engine_run() {
     }
 
     using nme::platform::Timer;
-    const Timer& clock = nme::platform::global_timer();
+    const Timer&            clock  = nme::platform::global_timer();
+    const nme::gfx::Surface window = g_window->surface();
 
-    bool running = true;
-    nme::u64 frame = 0;
-    nme::u64 prev = Timer::now();
+    nme::u64 prev      = Timer::now();
+    nme::f64 fps_accum = 0.0;
+    nme::u32 fps_count = 0;
 
-    while (running) {
+    // Runs until the user closes the window (WM_CLOSE -> surface_should_close()).
+    while (!nme::gfx::surface_should_close(window)) {
+
+        // input.poll(): drain OS events. Key/mouse feed the HID layer later (Ch.9).
+        nme::gfx::Event ev{};
+        while (nme::gfx::poll_event(window, &ev)) {
+            if (ev.type == nme::gfx::EventType::Resize) {
+                std::printf("  resize -> %ux%u\n", ev.resize.width, ev.resize.height);
+                // TODO(renderer): swapchain_resize(sc, ev.resize) once Vol II lands.
+            }
+        }
+
         const nme::u64 curr = Timer::now();
-        const nme::f64 dt = clock.to_seconds(curr - prev);
+        const nme::f64 dt   = clock.to_seconds(curr - prev);
         prev = curr;
 
-        // input.poll();  world.update(dt);  renderer.submit();
+        // world.update(dt);  renderer.submit();
 
-        std::printf("  frame %llu  dt = %.6f s\n",
-                    static_cast<unsigned long long>(frame), dt);
-
-        if (++frame >= static_cast<nme::u64>(maxFrames)) {
-            running = false;
+        ++fps_count;
+        fps_accum += dt;
+        if (fps_accum >= 1.0) {                    // report once per second, not per frame
+            std::printf("  %.1f fps  (%.3f ms/frame)\n",
+                        static_cast<nme::f64>(fps_count) / fps_accum,
+                        1000.0 * fps_accum / static_cast<nme::f64>(fps_count));
+            fps_accum = 0.0;
+            fps_count = 0;
         }
     }
-
-    std::printf("exited main loop after %llu frames\n",
-                static_cast<unsigned long long>(frame));
 }
 
 }  // namespace
