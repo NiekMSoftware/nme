@@ -14,6 +14,8 @@
 
 if (NME_GFX_BACKEND STREQUAL "Vulkan")
     find_package(Vulkan REQUIRED)
-    target_link_libraries(nme_engine PRIVATE Vulkan::Vulkan)   # PRIVATE: Vk never leaks past the seam
+    add_library(vma INTERFACE)
+    target_include_directories(vma INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vulkan)
+    target_link_libraries(nme_engine PRIVATE Vulkan::Vulkan vma)
     message(STATUS "  Vulkan             : ${Vulkan_VERSION}")
 endif()
