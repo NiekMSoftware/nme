@@ -32,7 +32,9 @@ RendererError Renderer::init() {
     // --- device ---
     gdi::DeviceDesc dd{};
     dd.backend = gdi::Backend::Vulkan;
+#if NME_DEBUG
     dd.debug   = true;                     // validation layers on; gate on build config for ship
+#endif
 
     auto rd = gdi::create_device(&dd, alloc_);
     if (result_is_err(&rd)) return renderer_error_from(result_error(&rd));
