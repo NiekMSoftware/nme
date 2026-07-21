@@ -1,9 +1,3 @@
-//
-// Created by niek on 7/18/2026.
-//
-
-// TODO: Implement win32 surface
-
 #include "nme/platform/gfx/gfx.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -52,7 +46,7 @@ struct SurfaceState {
 SurfaceState g_surfaces[kMaxSurfaces];
 bool         g_used[kMaxSurfaces] = {};
 
-SurfaceState* state_of(Surface s) {
+SurfaceState* state_of(const Surface s) {
     if (!valid(s) || s.id > kMaxSurfaces || !g_used[s.id - 1]) return nullptr;
     return &g_surfaces[s.id - 1];
 }
@@ -195,12 +189,44 @@ Surface create_surface(const WindowDesc* desc, GfxError* out_err) {
     if (out_err) *out_err = GfxError::None;
     return Surface{slot + 1};
 }
-void destroy_surface(Surface) {}
 
-bool poll_event(Surface, Event*) { return false; }
-bool surface_should_close(Surface) { return false; }
-Extent2D surface_size(Surface) { return Extent2D{1280, 720}; }
-NativeHandle surface_native(Surface) { return {}; }
+void destroy_surface(const Surface s) {
+    SurfaceState* w = state_of(s);
+    if (!w) return;
+    if (w->hwnd) DestroyWindow(w->hwnd);
+    *w = SurfaceState{};
+    g_used[s.id - 1] = false;
+}
+
+bool poll_event(const Surface s, Event* out) {
+    SurfaceState* w = state_of(s);
+    if (!w || !out) return false;
+
+    if (w->pop(out)) return true;       // fast path: something queued
+
+    MSG msg;
+    while (PeekMessageA(&msg, w->hwnd, 0, 0, PM_REMOVE)) {
+        TranslateMessage(&msg);
+        DispatchMessageA(&msg);         // wndproc enqueues into w
+        if (w->pop(out)) return true;
+    }
+    return false;                       // queue drained
+}
+
+bool surface_should_close(const Surface s) {
+    const SurfaceState* w = state_of(s);
+    return w ? w->should_close : true;
+}
+
+Extent2D surface_size(const Surface s) {
+    const SurfaceState* w = state_of(s);
+    return w ? w->size : Extent2D{0, 0};
+}
+
+NativeHandle surface_native(const Surface s) {
+    const SurfaceState* w = state_of(s);
+    return w ? static_cast<NativeHandle>(w->hwnd) : nullptr;
+}
 
 }  // namespace gfx
 
