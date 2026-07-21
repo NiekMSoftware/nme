@@ -95,6 +95,7 @@ set(NME_RENDERER_SOURCES
         src/renderer/renderer.cpp
 )
 set(NME_RENDERER_HEADERS
+        include/nme/renderer/gdi/gdi.h
         include/nme/renderer/gdi/gdi_types.h
 )
 
