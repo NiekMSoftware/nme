@@ -216,6 +216,11 @@ NativeHandle surface_native(const Surface s) {
     return w ? static_cast<NativeHandle>(w->hwnd) : nullptr;
 }
 
+void surface_set_title(const Surface s, const char* title) {
+    if (const SurfaceState* w = state_of(s))
+        SetWindowTextA(w->hwnd, title);
+}
+
 }  // namespace gfx
 
 // EOF

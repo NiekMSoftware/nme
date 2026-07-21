@@ -77,7 +77,7 @@ public:
         nme::CVarTable* cfg = g_config->table();
 
         nme::gfx::WindowDesc desc{};
-        desc.title     = "nme";
+        desc.title     = "nme";     // temp title
         desc.extent    = { static_cast<nme::u32>(nme::cvar_get_int(cfg, NME_SID("window.width"),  1280)),
                            static_cast<nme::u32>(nme::cvar_get_int(cfg, NME_SID("window.height"),  720)) };
         desc.resizable = true;
@@ -123,7 +123,18 @@ nme::SubsystemError engine_startup(nme::Kernel& kernel, const nme::Allocator& al
     g_renderer = kernel.add<nme::Renderer>(g_window->surface(), alloc);
     g_jobs     = kernel.add<nme::JobSystem>();
 
-    return kernel.startup();
+    if (const nme::SubsystemError e = kernel.startup(); subsystem_failed(e))
+        return e;
+
+    // set full title
+    char title[192];   // room for scene/project once they exist
+    std::snprintf(title, sizeof title, "%s - %s <%s>",
+                  NME_PLATFORM_NAME,
+                  nme::engine_version(),
+                  g_renderer->backend_name());
+    nme::gfx::surface_set_title(g_window->surface(), title);
+    nme::gfx::surface_set_title(g_window->surface(), title);
+    return nme::subsystem_ok();
 }
 
 void engine_run() {

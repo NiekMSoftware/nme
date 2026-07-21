@@ -155,6 +155,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/include/nme"
 target_compile_features(nme_engine PUBLIC cxx_std_20)
 
 target_compile_definitions(nme_engine PRIVATE
+    NME_VERSION=${PROJECT_VERSION}
     NME_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
     NME_VERSION_MINOR=${PROJECT_VERSION_MINOR}
     NME_VERSION_PATCH=${PROJECT_VERSION_PATCH})

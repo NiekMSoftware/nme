@@ -28,6 +28,19 @@ using Shader      = Handle<struct ShaderTag>;
 using Pipeline    = Handle<struct PipelineTag>;
 
 enum class Backend : u8 { Auto, Vulkan, D3D12, D3D11, Metal, OpenGL, OpenGLES, Null };
+inline const char* backend_str(const Backend b) {
+    switch (b) {
+        case Backend::Auto:     return "Auto";
+        case Backend::Vulkan:   return "Vulkan";
+        case Backend::D3D12:    return "D3D12";
+        case Backend::D3D11:    return "D3D11";
+        case Backend::Metal:    return "Metal";
+        case Backend::OpenGL:   return "OpenGL";
+        case Backend::OpenGLES: return "OpenGLES";
+        case Backend::Null:     return "Null";
+    }
+    return "Unknown";
+}
 
 enum class Format : u8 {
     Undefined,

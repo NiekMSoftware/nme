@@ -62,6 +62,9 @@ public:
 
     [[nodiscard]] gdi::Device    device()    const { return device_; }
     [[nodiscard]] gdi::Swapchain swapchain() const { return swapchain_; }
+    [[nodiscard]] const char*    backend_name() const {
+        return gdi::backend_str(gdi::device_backend(device_));
+    }
 
 private:
     RendererError init();   // real work speaks RendererError; startup() maps it

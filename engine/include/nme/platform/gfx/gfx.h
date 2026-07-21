@@ -24,6 +24,7 @@ bool         poll_event(Surface s, Event* out);   // false when queue drained
 bool         surface_should_close(Surface s);
 Extent2D     surface_size(Surface s);
 NativeHandle surface_native(Surface s);           // consumed by nme::gdi::create_swapchain
+void         surface_set_title(Surface s, const char* title);
 
 }  // namespace nme::gfx
 
