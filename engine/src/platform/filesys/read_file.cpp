@@ -20,7 +20,7 @@ Result<usize, FileError> read_fully(File* f, u8* dst, const usize sz) {
 
 }  // namespace
 
-Result<usize, FileError> file_read_into(const char* path, void* dst, usize cap) {
+Result<usize, FileError> file_read_into(const char* path, void* dst, const usize cap) {
     auto ro = file_open(path, FileMode::Read);
     if (result_is_err(&ro)) return result_err<usize, FileError>(result_error(&ro));
     File f = result_value(&ro);
