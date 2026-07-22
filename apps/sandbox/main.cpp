@@ -97,7 +97,7 @@ private:
 
         nme::fs::FileBlob blob = nme::result_value(&rb);
         std::printf("  config: source %s (%zu bytes)\n", path, blob.size);
-        std::printf("--- %.*s---\n", static_cast<int>(blob.size),
+        std::printf("---\n%.*s ---\n\n", static_cast<int>(blob.size),
                     reinterpret_cast<const char*>(blob.data));
         nme::fs::file_blob_free(&blob, &alloc_);
 #endif
