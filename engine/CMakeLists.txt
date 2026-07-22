@@ -35,6 +35,8 @@ set(NME_PLATFORM_HEADERS
 
         # File system
         include/nme/platform/filesys/file.h
+        include/nme/platform/filesys/path.h
+        include/nme/platform/filesys/read_file.h
 
         # Graphics
         include/nme/platform/gfx/clip_space.h
