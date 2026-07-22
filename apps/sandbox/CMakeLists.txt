@@ -19,7 +19,7 @@ install(TARGETS sandbox RUNTIME DESTINATION .)
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/assets/"  DESTINATION assets OPTIONAL)
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/shaders/" DESTINATION shaders OPTIONAL)
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/config/"  DESTINATION config)
+#install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/config/"  DESTINATION config)
 
 # Real linked runtime DLLs only (3.21+); the Vulkan loader is a system lib and won't appear.
 install(FILES $<TARGET_RUNTIME_DLLS:sandbox> DESTINATION . COMPONENT runtime)
