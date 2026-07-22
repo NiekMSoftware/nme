@@ -36,6 +36,7 @@ set(NME_PLATFORM_HEADERS
         include/nme/platform/error/result.h
 
         # File system
+        include/nme/platform/filesys/dir.h
         include/nme/platform/filesys/file.h
         include/nme/platform/filesys/path.h
         include/nme/platform/filesys/read_file.h
@@ -126,6 +127,7 @@ target_sources(nme_engine
 if (WIN32)
     target_sources(nme_engine
         PRIVATE
+            src/platform/filesys/win32_dir.cpp
             src/platform/filesys/win32_file.cpp
             src/platform/gfx/surface/win32_surface.cpp
             src/platform/thread/win32/condition_variable.cpp
