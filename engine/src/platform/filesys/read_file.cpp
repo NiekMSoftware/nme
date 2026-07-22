@@ -80,6 +80,12 @@ Result<FileBlob, FileError> file_read_entire(const char* path, const Allocator* 
     return result_ok<FileBlob, FileError>(FileBlob{ mem, sz });
 }
 
-void file_blob_free(FileBlob* blob, const Allocator* allocator) {}
+void file_blob_free(FileBlob* blob, const Allocator* allocator) {
+    if (blob && blob->data) {
+        free(allocator, blob->data, blob->size);
+        blob->data = nullptr;
+        blob->size = 0;
+    }
+}
 
 }  // namespace nme::fs
