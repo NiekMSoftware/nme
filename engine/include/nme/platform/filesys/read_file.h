@@ -18,7 +18,7 @@ struct FileBlob {
     usize size;
 };
 
-Result<FileBlob, FileError> file_read_into(const char* path, void* dst, usize cap);
+Result<usize, FileError> file_read_into(const char* path, void* dst, usize cap);
 
 Result<FileBlob, FileError> file_read_entire(const char* path, const Allocator* allocator);
 void                        file_blob_free(FileBlob* blob, const Allocator* allocator);

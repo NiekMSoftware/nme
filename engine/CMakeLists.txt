@@ -13,6 +13,7 @@ file(GLOB_RECURSE NME_HEADERS CONFIGURE_DEPENDS
 set(NME_PLATFORM_SOURCES
         src/platform/assert.cpp
         src/platform/filesys/path.cpp
+        src/platform/filesys/read_file.cpp
         src/platform/timer/timer.cpp
 )
 set(NME_PLATFORM_HEADERS
