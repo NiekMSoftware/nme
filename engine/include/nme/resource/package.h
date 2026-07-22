@@ -2,7 +2,7 @@
 #define NME_RESOURCE_PACKAGE_H_
 
 #include "nme/core/string/string_id.h"
-#include "nme/platform/collections/dynamic_array.h"
+#include "nme/platform/collections/hash_map.h"
 #include "nme/platform/filesys/file.h"
 #include "nme/platform/types.h"
 
@@ -46,7 +46,7 @@ struct PackHeader {
 
 struct Package {
     fs::File                m_file;
-    DynamicArray<PackEntry> m_toc;      // TODO: swap lookup for the hash map
+    HashMap<PackEntry>      m_toc;
     u64                     m_immediateBase;
     u64                     m_bulkBase;
     Allocator               m_alloc;
