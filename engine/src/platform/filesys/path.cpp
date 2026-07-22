@@ -15,4 +15,25 @@ StrView empty() { return StrView{nullptr, 0}; }
 
 }  // anonymous namespace
 
+bool path_is_absolute(const char* path) {
+    if (!path || !path[0]) return false;
+    if (is_sep(path[0])) return true;       // "/x" or "\\host\share"
+    const usize d = drive_len(path);
+    return d && is_sep(path[d]);            // "C:\x"
+}
+
+bool path_normalize(Path* out, const char* in) {
+
+}
+
+bool path_join(Path* out, const char* a, const char* b) {}
+
+StrView path_filename(const char* path) {}
+
+StrView path_extension(const char* path) {}
+
+StrView path_stem(const char* path) {}
+
+bool path_is_absolute(const char* path) {}
+
 }  // namespace nme::fs

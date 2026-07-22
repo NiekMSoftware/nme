@@ -19,6 +19,9 @@ struct Path {
     usize len;
 };
 
+// Determines if the given path is an absolute path.
+bool path_is_absolute(const char* path);
+
 // Normalizes the given input path string and stores the resulting normalized path
 // into the provided `Path` structure.
 bool path_normalize(Path* out, const char* in);
@@ -29,7 +32,6 @@ bool path_join(Path* out, const char* a, const char* b);
 
 // Extracts the filename portion of the given path string.
 StrView path_filename(const char* path);
-
 
 // Extracts the file extension from the given path string.
 StrView path_extension(const char* path);   // "a/b/c.png" -> "png"
