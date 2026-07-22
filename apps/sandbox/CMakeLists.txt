@@ -8,9 +8,6 @@ add_custom_command(TARGET sandbox POST_BUILD
         "$<TARGET_FILE_DIR:sandbox>/config"
         COMMENT "Staging sandbox config to $<TARGET_FILE_DIR:sandbox>/config"
         VERBATIM)
-set_target_properties(sandbox PROPERTIES
-        OUTPUT_NAME "nme_editor"
-        PROJECT_LABEL "NME - Editor v${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 
 include(GNUInstallDirs)
 
