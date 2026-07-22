@@ -1,8 +1,24 @@
-//
-// Created by niek on 7/22/2026.
-//
+#ifndef NME_PLATFORM_FILESYS_PATH_H_
+#define NME_PLATFORM_FILESYS_PATH_H_
 
-#ifndef NME_PATH_H
-#define NME_PATH_H
+#include "nme/platform/types.h"
 
-#endif  // NME_PATH_H
+namespace nme::fs {
+
+inline constexpr usize kMaxPath = 1024;
+
+// Non-owning slice into an existing path string
+struct StrView {
+    const char* data;
+    usize       len;
+};
+
+// Fixed-capacity path buffer. No heap for the common case.
+struct Path {
+    char  data[kMaxPath];
+    usize len;
+};
+
+}  // namespace nme::fs
+
+#endif  // NME_PLATFORM_FILESYS_PATH_H_
