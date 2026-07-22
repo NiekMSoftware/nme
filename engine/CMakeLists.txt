@@ -33,6 +33,9 @@ set(NME_PLATFORM_HEADERS
         # Error
         include/nme/platform/error/result.h
 
+        # File system
+        include/nme/platform/filesys/file.h
+
         # Graphics
         include/nme/platform/gfx/clip_space.h
         include/nme/platform/gfx/gfx_types.h
