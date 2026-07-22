@@ -67,6 +67,7 @@ include(cmake/nme_deps.cmake)
 # =========================================================
 add_subdirectory(engine)
 add_subdirectory(apps/sandbox)
+add_subdirectory(apps/editor)
 
 if (NME_BUILD_BENCHMARKS)
     add_subdirectory(apps/benchmarks)
