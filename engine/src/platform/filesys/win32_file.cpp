@@ -75,6 +75,14 @@ FileError file_flush(File* f) {
     return ::FlushFileBuffers(handle(f)) ? FileError::None : from_last_error(::GetLastError());
 }
 
+Result<usize, FileError> file_read(File* f, void* dst, const usize bytes) {
+    if (!f || !f->is_open) return result_err<usize, FileError>(FileError::Io);
+    DWORD got = 0;
+    if (!::ReadFile(handle(f), dst, static_cast<DWORD>(bytes), &got, nullptr))
+        return result_err<usize, FileError>(from_last_error(::GetLastError()));
+    return result_ok<usize, FileError>(static_cast<usize>(got));
+}
+
 Result<usize, FileError> file_write(File* f, const void* src, const usize bytes) {
     if (!f || !f->is_open) return result_err<usize, FileError>(FileError::Io);
     DWORD put = 0;
