@@ -1,5 +1,5 @@
-#ifndef NME_PLATFORM_FS_READ_FILE_H_
-#define NME_PLATFORM_FS_READ_FILE_H_
+#ifndef NME_PLATFORM_FILESYS_READ_FILE_H_
+#define NME_PLATFORM_FILESYS_READ_FILE_H_
 
 #include "nme/platform/error/result.h"
 #include "nme/platform/filesys/file.h"
@@ -25,4 +25,4 @@ void                        file_blob_free(FileBlob* blob, const Allocator* allo
 
 }  // namespace nme::fs
 
-#endif  // NME_PLATFORM_FS_READ_FILE_H_
+#endif  // NME_PLATFORM_FILESYS_READ_FILE_H_

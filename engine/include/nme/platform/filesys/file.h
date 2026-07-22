@@ -1,5 +1,5 @@
-#ifndef NME_PLATFORM_FILE_SYS_FILE_H_
-#define NME_PLATFORM_FILE_SYS_FILE_H_
+#ifndef NME_PLATFORM_FILESYS_FILE_H_
+#define NME_PLATFORM_FILESYS_FILE_H_
 
 #include "nme/platform/error/result.h"
 #include "nme/platform/types.h"
@@ -60,4 +60,4 @@ bool  file_remove (const char* path);
 
 }  // namespace nme::fs
 
-#endif  // NME_PLATFORM_FILE_SYS_FILE_H_
+#endif  // NME_PLATFORM_FILESYS_FILE_H_
