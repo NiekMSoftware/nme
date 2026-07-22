@@ -56,6 +56,39 @@ inline void hash_map_destroy(HashMap<V>* m) {
     m->m_count = m->m_capacity = m->m_mask = 0;
 }
 
+template<typename V>
+inline usize hash_map_count(const HashMap<V>* m) { return m->m_count; }
+template<typename V>
+inline bool hash_map_empty(const HashMap<V>* m) { return m->m_count == 0; }
+
+// --- lookup ---
+
+template<typename V>
+inline V* hash_map_find(const HashMap<V>* m, const StringId id) {
+    NME_ASSERT(id.value != 0);
+    usize slot = id.value & m->m_mask;
+    while (m->pKeys[slot].value != 0) {
+        if (m->pKeys[slot].value == id.value) return &m->pValues[slot];
+        slot = (slot + 1) & m->m_mask;
+    }
+    return nullptr;
+}
+template<typename V>
+inline const V* hash_map_find(const HashMap<V>* m, const StringId id) {
+    NME_ASSERT(id.value != 0);
+    usize slot = id.value & m->m_mask;
+    while (m->pKeys[slot].value != 0) {
+        if (m->pKeys[slot].value == id.value) return &m->pValues[slot];
+        slot = (slot + 1) & m->m_mask;
+    }
+    return nullptr;
+}
+
+template<typename V>
+inline bool hash_map_contains(const HashMap<V>* m, const StringId id) {
+    return hash_map_find(m, id) != nullptr;
+}
+
 }  // namespace nme
 
 #endif  // NME_COLLECTIONS_HASH_MAP_H_
