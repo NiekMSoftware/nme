@@ -1,5 +1,6 @@
 #ifndef NME_RESOURCE_PACKAGE_H_
 #define NME_RESOURCE_PACKAGE_H_
+#include "nme/core/string/string_id.h"
 #include "nme/platform/types.h"
 
 namespace nme::res {
@@ -19,7 +20,16 @@ enum class PackCompression : u8 {
     LZ4,
 };
 
-struct PackEntry { };
+struct PackEntry {
+    StringId        id;
+    u64             offset;         // relative to the section's base offset
+    u64             stored;         // bytes on disk (compressed)
+    u64             raw;            // bytes once decompressed (== stored if none)
+    u16             type;           // resource loader tag
+    PackSection     section;
+    PackCompression compression;
+    u8              _pad[4];
+};
 
 struct PackHeader { };
 
