@@ -39,12 +39,6 @@ StrView path_extension(const char* path);   // "a/b/c.png" -> "png"
 // Extracts the stem portion of the given path string.
 StrView path_stem(const char* path);
 
-// Checks if the given path is an absolute path.
-//
-// An absolute path is one that specifies a location in a file system
-// independently of the current working directory.
-bool path_is_absolute(const char* path);
-
 }  // namespace nme::fs
 
 #endif  // NME_PLATFORM_FILESYS_PATH_H_
