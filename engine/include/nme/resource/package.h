@@ -4,6 +4,7 @@
 #include "nme/core/string/string_id.h"
 #include "nme/platform/collections/hash_map.h"
 #include "nme/platform/filesys/file.h"
+#include "nme/platform/filesys/read_file.h"
 #include "nme/platform/types.h"
 
 namespace nme::res {
@@ -34,6 +35,7 @@ struct PackEntry {
     u8              _pad[4];
 };
 
+// On-disk header, written by the packer.
 struct PackHeader {
     u32 magic;
     u32 version;
@@ -44,6 +46,7 @@ struct PackHeader {
     u64 bulk_base;          // start of the bulk region
 };
 
+// A mounted archive: header + TOC held in RAM, file kept open for payload reads.
 struct Package {
     fs::File                m_file;
     HashMap<PackEntry>      m_toc;
@@ -52,6 +55,14 @@ struct Package {
     Allocator               m_alloc;
     bool                    bOpen;
 };
+
+Result<Package, fs::FileError> package_mount  (const char* path, Allocator a);
+void                           package_unmount(Package* p);
+
+const PackEntry* package_find(const Package* p, StringId id);
+
+Result<fs::FileBlob, fs::FileError>
+package_read_entry(Package* p, const PackEntry* e, const Allocator* a);
 
 }  // namespace nme::res
 
