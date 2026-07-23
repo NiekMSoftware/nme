@@ -98,6 +98,14 @@ set(NME_CORE_HEADERS
         include/nme/core/util/unique_handle.h
 )
 
+# --- Resources ---
+set(NME_RESOURCE_SOURCES
+        src/resource/package.cpp
+)
+set(NME_RESOURCE_HEADERS
+        include/nme/resource/package.h
+)
+
 # --- Renderer ---
 set(NME_RENDERER_SOURCES
         src/renderer/renderer.cpp
@@ -113,6 +121,7 @@ target_sources(nme_engine
 
         ${NME_CORE_SOURCES}
         ${NME_PLATFORM_SOURCES}
+        ${NME_RESOURCE_SOURCES}
         ${NME_RENDERER_SOURCES}
     PUBLIC
         FILE_SET HEADERS
@@ -120,6 +129,7 @@ target_sources(nme_engine
         FILES 
             ${NME_PLATFORM_HEADERS}
             ${NME_CORE_HEADERS}
+            ${NME_RESOURCE_HEADERS}
             ${NME_RENDERER_HEADERS}
 )
 
