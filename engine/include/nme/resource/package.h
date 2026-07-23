@@ -2,6 +2,7 @@
 #define NME_RESOURCE_PACKAGE_H_
 
 #include "nme/core/string/string_id.h"
+#include "nme/platform/collections/dynamic_array.h"
 #include "nme/platform/collections/hash_map.h"
 #include "nme/platform/filesys/file.h"
 #include "nme/platform/filesys/read_file.h"
@@ -49,7 +50,8 @@ struct PackHeader {
 // A mounted archive: header + TOC held in RAM, file kept open for payload reads.
 struct Package {
     fs::File                m_file;
-    HashMap<PackEntry>      m_toc;
+    DynamicArray<PackEntry> m_toc;      // rows, in packer order
+    HashMap<u32>            m_index;    // id -> row in m_toc
     u64                     m_immediateBase;
     u64                     m_bulkBase;
     Allocator               m_alloc;
