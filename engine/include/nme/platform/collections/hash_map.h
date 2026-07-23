@@ -64,7 +64,7 @@ inline bool hash_map_empty(const HashMap<V>* m) { return m->m_count == 0; }
 // --- lookup ---
 
 template<typename V>
-inline V* hash_map_find(const HashMap<V>* m, const StringId id) {
+inline V* hash_map_find(HashMap<V>* m, const StringId id) {
     NME_ASSERT(id.value != 0);
     usize slot = id.value & m->m_mask;
     while (m->pKeys[slot].value != 0) {
