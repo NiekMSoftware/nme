@@ -20,7 +20,7 @@ struct ResourceHandle {
 
 inline constexpr ResourceHandle kInvalidResourceHandle = {0, 0};
 
-inline bool resource_handle_valid(ResourceHandle h) { return h.index != 0; }
+inline bool resource_handle_valid(const ResourceHandle h) { return h.generation != 0; }
 
 inline bool operator==(const ResourceHandle& lhs, const ResourceHandle& rhs) {
     return lhs.index == rhs.index && lhs.generation == rhs.generation;
