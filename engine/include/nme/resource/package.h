@@ -58,7 +58,7 @@ struct Package {
     bool                    bOpen;
 };
 
-Result<Package, fs::FileError> package_mount  (const char* path, Allocator a);
+Result<Package, fs::FileError> package_mount  (const char* path, const Allocator& a);
 void                           package_unmount(Package* p);
 
 const PackEntry* package_find(const Package* p, StringId id);
