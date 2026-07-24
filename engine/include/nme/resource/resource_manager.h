@@ -60,10 +60,10 @@ void resource_manager_init    (ResourceManager* m, const Allocator& alloc);
 void resource_manager_shutdown(ResourceManager* m);
 
 // --- setup ---
-void resource_register_loader(ResourceManager* m, ResourceLoader loader);
+void resource_register_loader(ResourceManager* m, u16 type, ResourceLoader loader);
 
 void resource_mount  (ResourceManager* m, Package* pkg);
-void resource_unmount(ResourceManager* m, Package* pkg);
+void resource_unmount(ResourceManager* m, const Package* pkg);
 
 /**
  * @brief Load-or-dump by path: resolves the ID across mounts (type comes from TOC),
