@@ -1,14 +1,10 @@
-#pragma once
-//==============================================================================
-// Resource Manager
-//   Gregory Ch. 7.2 The Resource Manager
-//------------------------------------------------------------------------------
-// Responsibility documented; implementation added in the chapter/volume noted.
-// TODO: GUID-keyed, ref-counted, handle-based asset load/unload.
-//==============================================================================
+#ifndef NME_RESOURCE_RESOURCE_MANAGER_H_
+#define NME_RESOURCE_RESOURCE_MANAGER_H_
 
-namespace nme {
+namespace nme::res {
 
-// (stub -- no declarations yet)
 
-}  // namespace nme
+
+}  // namespace nme::res
+
+#endif  // NME_RESOURCE_RESOURCE_MANAGER_H_
