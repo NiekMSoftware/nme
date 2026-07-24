@@ -46,13 +46,23 @@ struct ResourceSlot {
 
 struct ResourceManager {
     Allocator                  m_alloc;
-    DynamicArray<ResourceSlot> m_slots;
-    HashMap<u32>               m_index;
-    DynamicArray<u32>          m_free;
-    DynamicArray<Package*>     m_mounts;
+    DynamicArray<ResourceSlot> m_slots;     // index -> record
+    HashMap<u32>               m_index;     // live id -> slot index (the registry)
+    DynamicArray<u32>          m_free;      // reusable slot indices
+    DynamicArray<Package*>     m_mounts;    // search order: back = highest priority
     ResourceLoader             m_loaders[kMaxResourceTypes];
     bool                       m_loaderSet[kMaxResourceTypes];
 };
+
+// --- lifetime ---
+void resource_manager_init    (ResourceManager* m, Allocator alloc);
+void resource_manager_shutdown(ResourceManager* m);
+
+// --- setup ---
+void resource_register_loader(ResourceManager* m, ResourceLoader loader);
+
+void resource_mount  (ResourceManager* m, Package* pkg);
+void resource_unmount(ResourceManager* m, Package* pkg);
 
 }  // namespace nme::res
 
