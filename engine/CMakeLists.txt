@@ -101,6 +101,7 @@ set(NME_CORE_HEADERS
 # --- Resources ---
 set(NME_RESOURCE_SOURCES
         src/resource/package.cpp
+        src/resource/resource_manager.cpp
 )
 set(NME_RESOURCE_HEADERS
         include/nme/resource/package.h
