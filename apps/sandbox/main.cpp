@@ -13,10 +13,13 @@
 #include <nme/platform/timer/timer.h>
 #include <nme/platform/types.h>
 #include <nme/renderer/renderer.h>
+#include <nme/resource/package.h>
+#include <nme/resource/resource_manager.h>
 #include <nme/version.h>
 
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 namespace {
 
@@ -147,6 +150,54 @@ private:
     nme::Allocator alloc_{};
 };
 
+// Resource subsystem. Owns the resource manager and any mounted archives.
+// Depends only downward -- platform/filesys for bytes, core/string for the GID
+// (StringId). Asset-owning subsystems (renderer, audio) register their loaders
+// against manager() and acquire through it; the manager stays asset-agnostic.
+class ResourceSubsystem final : public nme::Subsystem {
+public:
+    [[nodiscard]] nme::SubsystemError startup() override {
+        nme::res::resource_manager_init(&mgr_, alloc_);
+
+        // Mount the base archive if present. When it isn't, loose files
+        // (StreamingAssets style) still resolve via the manager's fallback.
+        nme::fs::Path pak{};
+        if (nme::fs::path_join(&pak, "assets", "base.nmepak") && nme::fs::file_exists(pak.data)) {
+            auto r = nme::res::package_mount(pak.data, alloc_);
+            if (nme::result_is_err(&r))
+                return nme::subsystem_error(nme::SubsystemError::Category::NotInitialized,
+                    "failed to mount base.nmepak");
+            packs_[pack_count_] = nme::result_value(&r);
+            nme::res::resource_mount(&mgr_, &packs_[pack_count_]);
+            ++pack_count_;
+            std::printf("  resources: mounted %s\n", pak.data);
+        } else {
+            std::puts("  resources: no base.nmepak, loose files only");
+        }
+        return nme::subsystem_ok();
+    }
+
+    void shutdown() override {
+        nme::res::resource_manager_shutdown(&mgr_);                 // unload live assets first
+        while (pack_count_ > 0) nme::res::package_unmount(&packs_[--pack_count_]);
+    }
+
+    [[nodiscard]] const char* name() const override { return "Resources"; }
+
+    // Asset owners register loaders and acquire through this.
+    nme::res::ResourceManager* manager() { return &mgr_; }
+
+    void set_allocator(const nme::Allocator& a) { alloc_ = a; }
+
+private:
+    nme::res::ResourceManager mgr_{};
+    nme::res::Package         packs_[4]{};   // room for base + patches/DLC
+    nme::u32                  pack_count_ = 0;
+    nme::Allocator            alloc_{};
+};
+
+ResourceSubsystem* g_resources;
+
 // Borrowed
 TimerSubsystem*  g_timer;
 WindowSubsystem* g_window;
@@ -159,6 +210,9 @@ nme::SubsystemError engine_startup(nme::Kernel& kernel, const nme::Allocator& al
     g_timer    = kernel.add<TimerSubsystem>();
     g_window   = kernel.add<WindowSubsystem>();   // after Config, before Renderer
     g_window->set_allocator(alloc);
+
+    g_resources = kernel.add<ResourceSubsystem>();  // before Renderer: it registers loaders here
+    g_resources->set_allocator(alloc);
 
     // TODO: Add more subsystems
     g_renderer = kernel.add<nme::Renderer>(g_window->surface(), alloc);
@@ -197,6 +251,64 @@ void engine_run() {
 #else
         std::printf("    stage %016llx\n", static_cast<unsigned long long>(stage.value));
 #endif
+    }
+
+    // --- resource manager smoke test (runs once at boot) ---------------------
+    // Registers a trivial loader that keeps the raw bytes, then drives the
+    // acquire -> bump -> release -> unload path so we can see it work.
+    {
+        enum : nme::u16 { kRawType = 0 };
+
+        struct RawAsset { nme::usize size; nme::u8* bytes; };
+
+        auto raw_load = [](const nme::fs::FileBlob* b, const nme::Allocator* a) -> void* {
+            auto* r   = static_cast<RawAsset*>(nme::alloc(a, sizeof(RawAsset), alignof(RawAsset)));
+            r->size   = b->size;
+            r->bytes  = static_cast<nme::u8*>(nme::alloc(a, b->size ? b->size : 1, 16));
+            std::memcpy(r->bytes, b->data, b->size);
+            return r;
+        };
+        auto raw_unload = [](void* asset, const nme::Allocator* a) -> void* {
+            auto* r = static_cast<RawAsset*>(asset);
+            nme::free(a, r->bytes, r->size ? r->size : 1);
+            nme::free(a, r, sizeof(RawAsset));
+            return nullptr;
+        };
+
+        nme::res::ResourceManager* rm = g_resources->manager();
+        nme::res::resource_register_loader(rm, kRawType, { raw_load, raw_unload });
+
+        // A loose file is the safe target at boot (works with or without a pak).
+        const char* kProbe = "config/engine.ini";
+        std::printf("  resources: probing \"%s\"\n", kProbe);
+
+        auto r1 = nme::res::resource_acquire(rm, kProbe, kRawType);
+        if (nme::result_is_err(&r1)) {
+            const nme::res::ResourceError e = nme::result_error(&r1);
+            const char* names[] = { "None","FileError","NoLoader","NotFound","LoadFailed","OutOfMemory" };
+            std::printf("  resources: acquire failed -> %s\n", names[static_cast<nme::u8>(e)]);
+            if (e == nme::res::ResourceError::NoLoader)
+                std::puts("  resources: (loader not registered on this manager -- "
+                          "check resource_register_loader / init order)");
+        } else {
+            const nme::res::ResourceHandle h = nme::result_value(&r1);
+            const auto* a1 = static_cast<const RawAsset*>(nme::res::resource_get(rm, h));
+            std::printf("  resources: acquired handle{%u,%u}  %zu bytes\n",
+                        h.index, h.generation, a1 ? a1->size : 0);
+
+            // Re-acquire: same id -> same handle, refcount bumped, no reload.
+            auto r2 = nme::res::resource_acquire(rm, kProbe, kRawType);
+            const nme::res::ResourceHandle h2 = nme::result_value(&r2);
+            std::printf("  resources: re-acquire same handle? %s\n", (h == h2) ? "yes" : "no");
+
+            // Drop both refs: first keeps it live, second unloads it.
+            nme::res::resource_release(rm, h2);
+            std::printf("  resources: after 1 release, still ready? %s\n",
+                        (nme::res::resource_state(rm, h) == nme::res::ResourceState::Ready) ? "yes" : "no");
+            nme::res::resource_release(rm, h);
+            std::printf("  resources: after 2 releases, get() -> %s (stale handle)\n",
+                        nme::res::resource_get(rm, h) ? "non-null" : "null");
+        }
     }
 
     using nme::platform::Timer;
