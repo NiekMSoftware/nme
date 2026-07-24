@@ -104,6 +104,8 @@ set(NME_RESOURCE_SOURCES
 )
 set(NME_RESOURCE_HEADERS
         include/nme/resource/package.h
+        include/nme/resource/resource_loader.h
+        include/nme/resource/resource_manager.h
 )
 
 # --- Renderer ---

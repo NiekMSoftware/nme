@@ -5,6 +5,8 @@
 
 namespace nme::res {
 
+// Represents a loader for managing resources in memory, providing mechanisms to
+// load and unload resources using custom logic defined by function pointers.
 struct ResourceLoader {
     // Function pointer used for loading resources from a FileBlob into memory.
     void* (*load)(const fs::FileBlob* blob, const Allocator* a);
