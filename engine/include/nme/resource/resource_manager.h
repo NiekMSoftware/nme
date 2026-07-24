@@ -27,7 +27,7 @@ enum class ResourceError : u8 {
 enum class ResourceState : u8 {
     Unloaded = 0,
     Loading,        // TODO: add async load path
-    Loaded,
+    Ready,
     Failed
 };
 
@@ -56,7 +56,7 @@ struct ResourceManager {
 };
 
 // --- lifetime ---
-void resource_manager_init    (ResourceManager* m, Allocator alloc);
+void resource_manager_init    (ResourceManager* m, const Allocator& alloc);
 void resource_manager_shutdown(ResourceManager* m);
 
 // --- setup ---
